@@ -13,6 +13,7 @@ Depending on the outcome, it (might) replace (one day) partially (or fully) the 
 * Support a subset of the JavaScript language with a single variable type per function as the current `ExprTk` syntax
 * Support only `TypedArray`s
 * Support array traversal with fusing of the expression logic into the array logic and zero subroutine calls
+* *(stretch goal)* Add SSE to MIR (probably as manual custom instructions) and support SSE operations
 
 # Implementation
 * Front-end parsing by `acorn`
