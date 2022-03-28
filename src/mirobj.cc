@@ -44,6 +44,10 @@ MIR::MIR(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     text = MIR_gen(ctx, 0, item);
 }
 
+MIR::~MIR() {
+    MIR_finish(ctx);
+}
+
 template <typename T> T MIR::RunWithType(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     T r = T(0);
