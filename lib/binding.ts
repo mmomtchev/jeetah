@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const addon = require('../build/Debug/jeetah-native');
 
 type VarType = 'Float64' | 'Float32';

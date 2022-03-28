@@ -4,6 +4,6 @@
     "lib": [ "esnext" ],
     "module": "commonjs",
     "outDir": "./dist",
-    "strict": true,
+    "strict": true
   }
 }

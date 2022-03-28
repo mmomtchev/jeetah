@@ -1,4 +1,5 @@
 import * as acorn from 'acorn';
+import * as estree from 'estree';
 import { MIR } from './binding';
 
 type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' | 'ret' | 'dble' | 'jmp';
@@ -23,10 +24,11 @@ interface Unit {
 }
 
 interface Value {
-    ref: string;
+    ref: string | number;
 }
 
-function processVariableDeclaration(code: Unit, v: any) {
+function processVariableDeclaration(code: Unit, v: estree.VariableDeclarator) {
+    if (v.id.type != 'Identifier') throw new SyntaxError('Unsupported variable declarator ' + v.id.type);
     const name = v.id.name;
     code.variables[name] = true;
     let init;
@@ -48,7 +50,7 @@ const binaryOps: Record<string, OpCode> = {
     '/': 'div'
 };
 
-function processBinaryExpression(code: Unit, expr: any): Value {
+function processBinaryExpression(code: Unit, expr: estree.BinaryExpression): Value {
     if (!binaryOps[expr.operator])
         throw new SyntaxError('invalid operation: ' + expr.operator);
 
@@ -75,11 +77,11 @@ function processBinaryExpression(code: Unit, expr: any): Value {
     return { ref: temp };
 }
 
-function processNode(code: Unit, node: any): Value | undefined {
+function processNode(code: Unit, node: estree.Node): Value | undefined {
     switch (node.type) {
         case 'BlockStatement':
             for (const leaf of node.body) {
-                const r = processNode(code, leaf);
+                processNode(code, leaf);
                 if (code.return) return code.return;
             }
             return;
@@ -101,6 +103,8 @@ function processNode(code: Unit, node: any): Value | undefined {
         case 'Identifier':
             return { ref: node.name };
         case 'Literal':
+            if (typeof node.value !== 'number')
+                throw new SyntaxError('Unsupported literal ' + node.value);
             return { ref: node.value };
         default:
             console.error(node);
@@ -108,19 +112,34 @@ function processNode(code: Unit, node: any): Value | undefined {
     }
 }
 
-export function processProgram(node: any, type: VarType): Unit {
+export function processProgram(node: estree.Program, type: VarType): Unit {
     if (node.type != 'Program')
         throw new TypeError('Passed value is not a program');
-    if (!node.body || !node.body[0] || node.body[0].type != 'FunctionDeclaration')
-        throw new TypeError('No function body');
-    const code: Unit = { name: node.body[0].id.name, text: [], params: {}, variables: {}, type };
-    for (const p of node.body[0].params)
+    if (!node.body || !node.body[0])
+        throw new SyntaxError('No function body');
+    const body = node.body[0];
+    if (body.type !== 'FunctionDeclaration')
+        throw new SyntaxError('No function body');
+    if (!body.id || !body.id.name)
+        throw new SyntaxError('Functions must have a name');
+    const code: Unit = { name: body.id.name, text: [], params: {}, variables: {}, type };
+    for (const p of body.params) {
+        if (p.type !== 'Identifier')
+            throw new SyntaxError('Function arguments must be identifiers');
         code.params[p.name] = true;
-    processNode(code, node.body[0].body);
+    }
+    processNode(code, body.body);
     return code;
 }
 
-export function produceLoop(code: Unit, node: any, iter: string, start: string | number, end: string | number, increment: string | number) {
+export function produceLoop(
+    code: Unit,
+    node: estree.Node,
+    iter: string,
+    start: string | number,
+    end: string | number,
+    increment: string | number) {
+
     code.variables['_main_loop_end'] = true;
     code.variables['_main_loop_inc'] = true;
 
@@ -136,7 +155,7 @@ export function produceLoop(code: Unit, node: any, iter: string, start: string |
     });
 
     const loopStart = code.text.length;
-    const result = processNode(code, node);
+    processNode(code, node);
     code.text[loopStart].label = '_main_loop';
 
     code.text.push({
@@ -193,8 +212,8 @@ export function genMIR(code: Unit) {
     return mir;
 }
 
-export function compile(fn: Function, type: VarType): MIR {
-    const ast = acorn.parse(fn.toString(), { ecmaVersion: 2015 });
+export function compile(fn: (...args: number[]) => number, type: VarType): MIR {
+    const ast = acorn.parse(fn.toString(), { ecmaVersion: 2015 }) as unknown as estree.Program;
     const code = processProgram(ast, type);
     const text = genMIR(code);
     return new MIR(text, type, Object.keys(code.params).length);
