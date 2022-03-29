@@ -1,6 +1,19 @@
 #include "mirobj.h"
+#include <cmath>
+#include <functional>
+#include <map>
 
 using namespace Napi;
+
+template <typename T>
+std::map<std::string, void*> builtins = {
+    {"cos", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::cos))},
+    {"sin", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::sin))},
+    {"sqrt", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::sqrt))},
+    {"pow", reinterpret_cast<void*>(static_cast<T (*)(T, T)>(std::pow))},
+    {"exp", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::exp))},
+    {"log", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::log))}
+};
 
 MIR::MIR(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
@@ -30,6 +43,15 @@ MIR::MIR(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     module = DLIST_HEAD(MIR_module_t, *MIR_get_module_list(ctx));
     MIR_load_module(ctx, module);
 
+    switch (type) {
+    case Float32:
+        LinkBuiltins<float>();
+        break;
+    case Float64:
+        LinkBuiltins<double>();
+        break;
+    }
+
     item = nullptr;
     for (MIR_item_t f = DLIST_HEAD(MIR_item_t, module->items); f != nullptr; f = DLIST_NEXT(MIR_item_t, f))
         if (f->item_type == MIR_func_item)
@@ -44,8 +66,12 @@ MIR::MIR(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     text = MIR_gen(ctx, 0, item);
 }
 
-MIR::~MIR() {
-    MIR_finish(ctx);
+MIR::~MIR() { MIR_finish(ctx); }
+
+template <typename T> void MIR::LinkBuiltins() {
+    for (auto const &symbol : builtins<T>) {
+        MIR_load_external(ctx, symbol.first.c_str(), symbol.second);
+    }
 }
 
 template <typename T> T MIR::RunWithType(const Napi::CallbackInfo &info) {

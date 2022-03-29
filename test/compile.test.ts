@@ -34,4 +34,21 @@ describe('compilation', () => {
         const r = m.Run(25, 100);
         assert.closeTo(r, 24.0239, 1e-3);
     });
+    it('Math', () => {
+        const m = compile(function sqrt(x: number) {
+            return Math.sqrt(x);
+        }, 'Float64');
+        assert.instanceOf(m, MIR);
+        const r = m.Run(2);
+        assert.closeTo(r, Math.SQRT2, 1e-3);
+    });
+    it('Trigonometry', () => {
+        const fn = function lapseRate(x: number) {
+            return (2 * Math.cos(x) / (Math.sqrt(x) + 1));
+        };
+        const m = compile(fn, 'Float64');
+        assert.instanceOf(m, MIR);
+        const r = m.Run(Math.PI / 2);
+        assert.closeTo(r, fn(Math.PI / 2), 1e-3);
+    });
 });

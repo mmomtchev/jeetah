@@ -2,13 +2,19 @@ import * as acorn from 'acorn';
 import * as estree from 'estree';
 import { MIR } from './binding';
 
-type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' | 'ret' | 'dble' | 'jmp';
+type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
+    'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
+    'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
+    'ret' | 'ble' | 'jmp' | 'call';
+type OpPrefix = 'f' | 'd';
+type OpType = 'f' | 'd';
 type VarType = 'Float64' | 'Float32';
 
 interface Instruction {
     label?: string;
     op: OpCode;
     output?: string;
+    raw?: boolean;
     input?: (string | number)[];
 }
 
@@ -17,6 +23,7 @@ interface Unit {
     type: VarType;
     params: Record<string, boolean>;
     variables: Record<string, boolean>;
+    imports: Record<string, boolean>;
     text: Instruction[];
     return?: Value;
 
@@ -77,6 +84,55 @@ function processBinaryExpression(code: Unit, expr: estree.BinaryExpression): Val
     return { ref: temp };
 }
 
+const builtins: Record<string, {arg: number, c: string}> = {
+    'Math.sin': { arg: 1, c: 'sin' },
+    'Math.cos': { arg: 1, c: 'cos' },
+    'Math.sqrt': { arg: 1, c: 'sqrt' },
+    'Math.log': { arg: 1, c: 'log' },
+    'Math.exp': { arg: 1, c: 'exp' },
+    'Math.pow': { arg: 2, c: 'pow' }
+};
+
+let callReturnId = 0;
+function processCallExpression(code: Unit, expr: estree.CallExpression): Value {
+    let name;
+    if (expr.callee.type === 'MemberExpression') {
+        if (expr.callee.object.type !== 'Identifier' || expr.callee.property.type !== 'Identifier')
+            throw new SyntaxError('Indirect call expressions are not yet supported');
+        name = expr.callee.object.name + '.' + expr.callee.property.name;
+    } else if (expr.callee.type === 'Identifier') {
+        name = expr.callee.name;
+    } else {
+        throw new SyntaxError('Indirect call expressions are not yet supported');
+    }
+    if (builtins[name] === undefined)
+        throw new ReferenceError('Undefined function ' + name);
+    const fn = builtins[name];
+    if (expr.arguments.length !== fn.arg)
+        throw new TypeError(`${name} expects ${fn.arg} arguments`);
+    
+    const args: Value[] = [];
+    for (const arg of expr.arguments) {
+        const r = processNode(code, arg);
+        if (!r) {
+            throw new SyntaxError('Function argument evaluates to no value');
+        }
+        args.push(r);
+    }
+
+    const result = `_callret_${callReturnId++}`;
+    code.variables[result] = true;
+    code.text.push({
+        op: 'call',
+        raw: true,
+        output: `_p_${fn.c}`,
+        input: [fn.c, result, ...args.map((a) => a.ref) ]
+    });
+    code.imports[name] = true;
+
+    return {ref: result};
+}
+
 function processNode(code: Unit, node: estree.Node): Value | undefined {
     switch (node.type) {
         case 'BlockStatement':
@@ -106,6 +162,8 @@ function processNode(code: Unit, node: estree.Node): Value | undefined {
             if (typeof node.value !== 'number')
                 throw new SyntaxError('Unsupported literal ' + node.value);
             return { ref: node.value };
+        case 'CallExpression':
+            return processCallExpression(code, node);
         default:
             console.error(node);
             throw new SyntaxError('unsupported statement ' + node.type);
@@ -124,7 +182,7 @@ export function processFunction(node: estree.FunctionExpression, type: VarType):
             type: 'Identifier'
         };
     }
-    const code: Unit = { name: node.id.name, text: [], params: {}, variables: {}, type };
+    const code: Unit = { name: node.id.name, text: [], params: {}, variables: {}, imports: {}, type };
     for (const p of node.params) {
         if (p.type !== 'Identifier')
             throw new SyntaxError('Function arguments must be identifiers');
@@ -166,35 +224,51 @@ export function produceLoop(
         input: [iter, '_main_loop_inc']
     });
     code.text.push({
-        op: 'dble',
+        op: 'ble',
         output: '_main_loop',
         input: [iter, '_main_loop_end']
     });
 }
 
-const prefix: Record<VarType, string> = {
+const opPrefix: Record<VarType, OpPrefix> = {
+    'Float32': 'f',
+    'Float64': 'd'
+};
+
+const opType: Record<VarType, OpType> = {
     'Float32': 'f',
     'Float64': 'd'
 };
 
 export function genMIR(code: Unit) {
-    if (!prefix[code.type]) throw new TypeError('Unsupported variable type');
+    if (!opPrefix[code.type]) throw new TypeError('Unsupported variable type');
 
     let mir = `m_${code.name}:\tmodule\n`;
-    mir += `export\t${code.name}\n`;
-    mir += `${code.name}:\tfunc ${prefix[code.type]}`;
+
+    for (const imp of Object.keys(code.imports)) {
+        mir += `_p_${builtins[imp].c}:\tproto ${opType[code.type]}`;
+        if (builtins[imp].arg > 0) {
+            for (let i = 0; i < builtins[imp].arg; i++)
+                mir += `, ${opType[code.type]}:arg${i}`;
+        }
+        mir += '\n';
+        mir += `import\t${builtins[imp].c}\n`;
+    }
+
+    mir += `export\t_f_${code.name}\n`;
+    mir += `_f_${code.name}:\tfunc ${opType[code.type]}`;
     if (Object.keys(code.params).length) {
-        mir += ', ' + Object.keys(code.params).map(p => prefix[code.type] + ':' + p).join(', ');
+        mir += ', ' + Object.keys(code.params).map(p => opType[code.type] + ':' + p).join(', ');
     }
     mir += '\n';
     if (Object.keys(code.variables).length) {
-        mir += '\tlocal\t' + Object.keys(code.variables).map(v => prefix[code.type] + ':' + v).join(', ') + '\n';
+        mir += '\tlocal\t' + Object.keys(code.variables).map(v => opType[code.type] + ':' + v).join(', ') + '\n';
     }
 
     for (const op of code.text) {
         if (op.label)
             mir += `${op.label}:\n`;
-        mir += `\t\t${prefix[code.type] + op.op}`;
+        mir += `\t\t${(op.raw ? '' : opPrefix[code.type]) + op.op}`;
         if (op.output)
             mir += `\t${op.output}`;
         if (op.input && op.input.length)

@@ -13,7 +13,10 @@ class MIR : public Napi::ObjectWrap<MIR> {
   public:
     MIR(const Napi::CallbackInfo &);
     virtual ~MIR();
+
+    template <typename T> void LinkBuiltins();
     template <typename T> T RunWithType(const Napi::CallbackInfo &);
+
     Napi::Value Run(const Napi::CallbackInfo &);
 
     static Napi::Function GetClass(Napi::Env);

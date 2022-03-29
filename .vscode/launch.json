@@ -13,7 +13,7 @@
                 "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
             ],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
