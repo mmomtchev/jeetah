@@ -28,8 +28,8 @@ Very small subset of the JS language functional
 
 # Example
 
-```shell
-ts-node bin/js2m.ts \
+```
+$ ts-node bin/js2m.ts \
 '(temp, height) => {
 	const g = 9.81;
 	const c = 1005;
@@ -51,6 +51,24 @@ _f__jeetah_fn_0:	func d, d:temp, d:height
 		dmul	_expr_2, height, Gamma
 		dsub	_expr_1, temp, _expr_2
 		ret	_expr_1
+	endfunc
+endmodule
+```
+
+```
+$ ts-node bin/js2m.ts '(x) => Math.pow(Math.sqrt(x), 2)'
+
+m__jeetah_fn_0:	module
+_p_sqrt:	proto d, d:arg0
+import	sqrt
+_p_pow:	proto d, d:arg0, d:arg1
+import	pow
+export	_f__jeetah_fn_0
+_f__jeetah_fn_0:	func d, d:x
+	local	d:_callret_0, d:_callret_1
+		call	_p_sqrt, sqrt, _callret_0, x
+		call	_p_pow, pow, _callret_1, _callret_0, 2.0000000000000000
+		ret	_callret_1
 	endfunc
 endmodule
 ```

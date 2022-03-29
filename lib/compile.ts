@@ -156,6 +156,15 @@ function processNode(code: Unit, node: estree.Node): Value | undefined {
                 }
             }
             return;
+        case 'ArrowFunctionExpression':
+            if (node.body) {
+                const r = processNode(code, node.body);
+                if (r) {
+                    code.return = r;
+                    return r;
+                }
+            }
+            return;
         case 'BinaryExpression':
             return processBinaryExpression(code, node);
         case 'Identifier':
@@ -173,25 +182,31 @@ function processNode(code: Unit, node: estree.Node): Value | undefined {
 }
 
 let fnUid = 0;
-function processFunction(node: estree.FunctionExpression, type: VarType): Unit {
+function processFunction(node: estree.FunctionExpression | estree.ArrowFunctionExpression, type: VarType): Unit {
     if (node.type !== 'FunctionExpression' && node.type !== 'ArrowFunctionExpression')
         throw new TypeError('Passed value is not a function expression');
-    if (!node.body || node.body.type !== 'BlockStatement')
+    let body;
+    if (node.type === 'ArrowFunctionExpression')
+        body = node;
+    else if (node.type === 'FunctionExpression' && node.body.type == 'BlockStatement')
+        body = node.body;
+    else
         throw new SyntaxError('No function body');
-    if (!node.id || !node.id.name) {
-        node.id = {
-            name: `_jeetah_fn_${fnUid++}`,
-            type: 'Identifier'
-        };
+    let name;
+    if (node.type === 'ArrowFunctionExpression' || !node.id || !node.id.name) {
+        name = `_jeetah_fn_${fnUid++}`;
+    } else {
+        name = node.id.name;
     }
-    const code: Unit = { name: node.id.name, text: [], params: {}, variables: {}, imports: {}, type };
+    const code: Unit = { name, text: [], params: {}, variables: {}, imports: {}, type };
     for (const p of node.params) {
         if (p.type !== 'Identifier')
             throw new SyntaxError('Function arguments must be identifiers');
         code.params[p.name] = true;
     }
-    processNode(code, node.body);
+    processNode(code, body);
     return code;
+
 }
 
 export function produceLoop(

@@ -62,7 +62,7 @@
             "program": "node_modules/.bin/ts-node",
             "args": [
                 "bin/js2m.ts",
-                "(temp, height) => { const g = 9.81; const c = 1005; const Gamma = g / c; return temp - height * Gamma; }"
+                "(x) => Math.pow(Math.sqrt(x+1), 2)"
             ]
         }
     ]
