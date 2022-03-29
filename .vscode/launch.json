@@ -5,13 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "(gdb) Unit tests",
             "type": "cppdbg",
             "request": "launch",
             "program": "/usr/bin/node",
-            "args": [ 
-                "${workspaceFolder}/node_modules/.bin/ts-node",
-                "${workspaceFolder}/lib/compile.ts"
+            "args": [
+                "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -25,7 +24,7 @@
                     "ignoreFailures": true
                 },
                 {
-                    "description":  "Set Disassembly Flavor to Intel",
+                    "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
@@ -34,15 +33,11 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "(node) Unit tests",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/lib/compile.ts",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ]
+            "program": "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
         }
     ]
 }

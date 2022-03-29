@@ -112,23 +112,25 @@ function processNode(code: Unit, node: estree.Node): Value | undefined {
     }
 }
 
-export function processProgram(node: estree.Program, type: VarType): Unit {
-    if (node.type != 'Program')
-        throw new TypeError('Passed value is not a program');
-    if (!node.body || !node.body[0])
+let fnUid = 0;
+export function processFunction(node: estree.FunctionExpression, type: VarType): Unit {
+    if (node.type != 'FunctionExpression')
+        throw new TypeError('Passed value is not a function expression');
+    if (!node.body || node.body.type !== 'BlockStatement')
         throw new SyntaxError('No function body');
-    const body = node.body[0];
-    if (body.type !== 'FunctionDeclaration')
-        throw new SyntaxError('No function body');
-    if (!body.id || !body.id.name)
-        throw new SyntaxError('Functions must have a name');
-    const code: Unit = { name: body.id.name, text: [], params: {}, variables: {}, type };
-    for (const p of body.params) {
+    if (!node.id || !node.id.name) {
+        node.id = {
+            name: `_jeetah_fn_${fnUid++}`,
+            type: 'Identifier'
+        };
+    }
+    const code: Unit = { name: node.id.name, text: [], params: {}, variables: {}, type };
+    for (const p of node.params) {
         if (p.type !== 'Identifier')
             throw new SyntaxError('Function arguments must be identifiers');
         code.params[p.name] = true;
     }
-    processNode(code, body.body);
+    processNode(code, node.body);
     return code;
 }
 
@@ -213,8 +215,9 @@ export function genMIR(code: Unit) {
 }
 
 export function compile(fn: (...args: number[]) => number, type: VarType): MIR {
-    const ast = acorn.parse(fn.toString(), { ecmaVersion: 2015 }) as unknown as estree.Program;
-    const code = processProgram(ast, type);
+    const ast = acorn.parseExpressionAt(fn.toString(), 0,
+        { ecmaVersion: 2015 }) as unknown as estree.FunctionExpression;
+    const code = processFunction(ast, type);
     const text = genMIR(code);
     return new MIR(text, type, Object.keys(code.params).length);
 }
