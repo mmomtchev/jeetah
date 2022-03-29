@@ -70,11 +70,7 @@ function processBinaryExpression(code: Unit, expr: estree.BinaryExpression): Val
 
     const left = processNode(code, expr.left);
     if (!left) throw new SyntaxError('invalid left binary operator ' + expr.operator);
-    code.text.push({
-        op: 'mov',
-        output: temp,
-        input: [left.ref]
-    });
+
     const right = processNode(code, expr.right);
     if (!right) throw new SyntaxError('invalid right binary operator ' + expr.operator);
 
