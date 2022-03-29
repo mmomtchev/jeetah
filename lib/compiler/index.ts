@@ -1,18 +1,22 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
-import { MIR } from './binding';
+import { MIR } from '../binding';
 
-type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
+import { processBinaryExpression } from './expression';
+import { processFunction, processCallExpression, builtins } from './function';
+import { processVariableDeclaration } from './variable';
+
+export type JeetahFn = (...args: number[]) => number;
+
+export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
     'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
     'ret' | 'ble' | 'jmp' | 'call';
-type OpPrefix = 'f' | 'd';
-type OpType = 'f' | 'd';
-type VarType = 'Float64' | 'Float32';
+export type OpPrefix = 'f' | 'd';
+export type OpType = 'f' | 'd';
+export type VarType = 'Float64' | 'Float32';
 
-type JeetahFn = (...args: number[]) => number;
-
-interface Instruction {
+export interface Instruction {
     label?: string;
     op: OpCode;
     output?: string;
@@ -20,7 +24,7 @@ interface Instruction {
     input?: (string | number)[];
 }
 
-interface Unit {
+export interface Unit {
     name: string;
     type: VarType;
     params: Record<string, boolean>;
@@ -32,106 +36,11 @@ interface Unit {
     exprId?: number;
 }
 
-interface Value {
+export interface Value {
     ref: string | number;
 }
 
-function processVariableDeclaration(code: Unit, v: estree.VariableDeclarator) {
-    if (v.id.type != 'Identifier') throw new SyntaxError('Unsupported variable declarator ' + v.id.type);
-    const name = v.id.name;
-    code.variables[name] = true;
-    let init;
-    if (v.init)
-        init = processNode(code, v.init);
-    if (init) {
-        code.text.push({
-            op: 'mov',
-            output: name,
-            input: [init.ref]
-        });
-    }
-}
-
-const binaryOps: Record<string, OpCode> = {
-    '+': 'add',
-    '-': 'sub',
-    '*': 'mul',
-    '/': 'div'
-};
-
-function processBinaryExpression(code: Unit, expr: estree.BinaryExpression): Value {
-    if (!binaryOps[expr.operator])
-        throw new SyntaxError('invalid operation: ' + expr.operator);
-
-    if (!code.exprId) code.exprId = 0;
-    const temp = `_expr_${code.exprId}`;
-    code.exprId++;
-    code.variables[temp] = true;
-
-    const left = processNode(code, expr.left);
-    if (!left) throw new SyntaxError('invalid left binary operator ' + expr.operator);
-
-    const right = processNode(code, expr.right);
-    if (!right) throw new SyntaxError('invalid right binary operator ' + expr.operator);
-
-    code.text.push({
-        op: binaryOps[expr.operator],
-        output: temp,
-        input: [left.ref, right.ref]
-    });
-    return { ref: temp };
-}
-
-const builtins: Record<string, { arg: number, c: string }> = {
-    'Math.sin': { arg: 1, c: 'sin' },
-    'Math.cos': { arg: 1, c: 'cos' },
-    'Math.sqrt': { arg: 1, c: 'sqrt' },
-    'Math.log': { arg: 1, c: 'log' },
-    'Math.exp': { arg: 1, c: 'exp' },
-    'Math.pow': { arg: 2, c: 'pow' }
-};
-
-let callReturnId = 0;
-function processCallExpression(code: Unit, expr: estree.CallExpression): Value {
-    let name;
-    if (expr.callee.type === 'MemberExpression') {
-        if (expr.callee.object.type !== 'Identifier' || expr.callee.property.type !== 'Identifier')
-            throw new SyntaxError('Indirect call expressions are not yet supported');
-        name = expr.callee.object.name + '.' + expr.callee.property.name;
-    } else if (expr.callee.type === 'Identifier') {
-        name = expr.callee.name;
-    } else {
-        throw new SyntaxError('Indirect call expressions are not yet supported');
-    }
-    if (builtins[name] === undefined)
-        throw new ReferenceError('Undefined function ' + name);
-    const fn = builtins[name];
-    if (expr.arguments.length !== fn.arg)
-        throw new TypeError(`${name} expects ${fn.arg} arguments`);
-
-    const args: Value[] = [];
-    for (const arg of expr.arguments) {
-        const r = processNode(code, arg);
-        if (!r) {
-            throw new SyntaxError('Function argument evaluates to no value');
-        }
-        args.push(r);
-    }
-
-    const result = `_callret_${callReturnId++}`;
-    code.variables[result] = true;
-    code.text.push({
-        op: 'call',
-        raw: true,
-        output: `_p_${fn.c}`,
-        input: [fn.c, result, ...args.map((a) => a.ref)]
-    });
-    code.imports[name] = true;
-
-    return { ref: result };
-}
-
-function processNode(code: Unit, node: estree.Node): Value | undefined {
+export function processNode(code: Unit, node: estree.Node): Value | undefined {
     switch (node.type) {
         case 'BlockStatement':
             for (const leaf of node.body) {
@@ -175,34 +84,6 @@ function processNode(code: Unit, node: estree.Node): Value | undefined {
             console.error(node);
             throw new SyntaxError('unsupported statement ' + node.type);
     }
-}
-
-let fnUid = 0;
-function processFunction(node: estree.FunctionExpression | estree.ArrowFunctionExpression, type: VarType): Unit {
-    if (node.type !== 'FunctionExpression' && node.type !== 'ArrowFunctionExpression')
-        throw new TypeError('Passed value is not a function expression');
-    let body;
-    if (node.type === 'ArrowFunctionExpression')
-        body = node;
-    else if (node.type === 'FunctionExpression' && node.body.type == 'BlockStatement')
-        body = node.body;
-    else
-        throw new SyntaxError('No function body');
-    let name;
-    if (node.type === 'ArrowFunctionExpression' || !node.id || !node.id.name) {
-        name = `_jeetah_fn_${fnUid++}`;
-    } else {
-        name = node.id.name;
-    }
-    const code: Unit = { name, text: [], params: {}, variables: {}, imports: {}, type };
-    for (const p of node.params) {
-        if (p.type !== 'Identifier')
-            throw new SyntaxError('Function arguments must be identifiers');
-        code.params[p.name] = true;
-    }
-    processNode(code, body);
-    return code;
-
 }
 
 export function produceLoop(

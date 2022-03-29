@@ -1,8 +1,7 @@
 import * as chai from 'chai';
 const assert = chai.assert;
 
-import { MIR } from '../lib/binding';
-import { compile } from '../lib/compile';
+import { MIR, compile } from '../lib';
 
 describe('compilation', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

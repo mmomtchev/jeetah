@@ -1,8 +1,7 @@
 const chai = require('chai');
 const assert = chai.assert;
 
-const { MIR } = require('../lib/binding');
-const { compile } = require('../lib/compile');
+const { MIR, compile } = require('../lib');
 
 describe('JS arrow functions', () => {
     afterEach(global.gc);

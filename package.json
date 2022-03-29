@@ -13,7 +13,8 @@
     "test": "npx mocha",
     "gcov": "mkdir -p coverage && cd coverage && gcov -o ../build/Debug/obj.target/jeetah/src ../src/*",
     "lcov": "npx c8 report --reporter=text-lcov > coverage/tests.lcov",
-    "codecov": "cd coverage && curl -s https://codecov.io/bash | bash"
+    "codecov": "cd coverage && curl -s https://codecov.io/bash | bash",
+    "build": "tsc"
   },
   "gypfile": true,
   "directories": {
