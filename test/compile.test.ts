@@ -32,7 +32,7 @@ describe('compilation', () => {
         }, 'Float64');
         assert.instanceOf(m, MIR);
         const r = m.Run(25, 100);
-        assert.closeTo(r, 24.0239, 1e-3);
+        assert.closeTo(r, 24.02388, 1e-6);
     });
     it('Math', () => {
         const m = compile(function sqrt(x: number) {
@@ -40,15 +40,24 @@ describe('compilation', () => {
         }, 'Float64');
         assert.instanceOf(m, MIR);
         const r = m.Run(2);
-        assert.closeTo(r, Math.SQRT2, 1e-3);
+        assert.closeTo(r, Math.SQRT2, 1e-6);
     });
-    it('Trigonometry', () => {
-        const fn = function lapseRate(x: number) {
+    it('Functions with temporaries', () => {
+        const fn = function trig(x: number) {
             return (2 * Math.cos(x) / (Math.sqrt(x) + 1));
         };
         const m = compile(fn, 'Float64');
         assert.instanceOf(m, MIR);
         const r = m.Run(Math.PI / 2);
-        assert.closeTo(r, fn(Math.PI / 2), 1e-3);
+        assert.closeTo(r, fn(Math.PI / 2), 1e-6);
+    });
+    it('Nested functions with temporary arguments', () => {
+        const fn = function (x: number) {
+           return Math.pow(Math.sqrt(x) / 2, 2);
+        };
+        const m = compile(fn, 'Float64');
+        assert.instanceOf(m, MIR);
+        const r = m.Run(4);
+        assert.closeTo(r, 1, 1e-6);
     });
 });
