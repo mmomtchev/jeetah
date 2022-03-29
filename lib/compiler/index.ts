@@ -3,8 +3,9 @@ import * as estree from 'estree';
 import { MIR } from '../binding';
 
 import { processBinaryExpression } from './expression';
-import { processFunction, processCallExpression, builtins } from './function';
+import { processFunction, processCallExpression } from './function';
 import { processVariableDeclaration } from './variable';
+import { genModule } from './mir';
 
 export type JeetahFn = (...args: number[]) => number;
 
@@ -12,8 +13,7 @@ export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
     'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
     'ret' | 'ble' | 'jmp' | 'call';
-export type OpPrefix = 'f' | 'd';
-export type OpType = 'f' | 'd';
+
 export type VarType = 'Float64' | 'Float32';
 
 export interface Instruction {
@@ -124,69 +124,11 @@ export function produceLoop(
     });
 }
 
-const opPrefix: Record<VarType, OpPrefix> = {
-    'Float32': 'f',
-    'Float64': 'd'
-};
-
-const opType: Record<VarType, OpType> = {
-    'Float32': 'f',
-    'Float64': 'd'
-};
-
-function genMIR(code: Unit) {
-    if (!opPrefix[code.type]) throw new TypeError('Unsupported variable type');
-
-    let mir = `m_${code.name}:\tmodule\n`;
-
-    for (const imp of Object.keys(code.imports)) {
-        mir += `_p_${builtins[imp].c}:\tproto ${opType[code.type]}`;
-        if (builtins[imp].arg > 0) {
-            for (let i = 0; i < builtins[imp].arg; i++)
-                mir += `, ${opType[code.type]}:arg${i}`;
-        }
-        mir += '\n';
-        mir += `import\t${builtins[imp].c}\n`;
-    }
-
-    mir += `export\t_f_${code.name}\n`;
-    mir += `_f_${code.name}:\tfunc ${opType[code.type]}`;
-    if (Object.keys(code.params).length) {
-        mir += ', ' + Object.keys(code.params).map(p => opType[code.type] + ':' + p).join(', ');
-    }
-    mir += '\n';
-    if (Object.keys(code.variables).length) {
-        mir += '\tlocal\t' + Object.keys(code.variables).map(v => opType[code.type] + ':' + v).join(', ') + '\n';
-    }
-
-    for (const op of code.text) {
-        if (op.label)
-            mir += `${op.label}:\n`;
-        mir += `\t\t${(op.raw ? '' : opPrefix[code.type]) + op.op}`;
-        if (op.output)
-            mir += `\t${op.output}`;
-        if (op.input && op.input.length)
-            for (const i of op.input) {
-                mir += ', ';
-                if (typeof i === 'number')
-                    mir += i.toFixed(16);
-                else
-                    mir += i;
-            }
-        mir += '\n';
-    }
-    if (code.return)
-        mir += `\t\tret\t${code.return.ref}\n`;
-    mir += '\tendfunc\n';
-    mir += 'endmodule\n';
-    return mir;
-}
-
 export function compileToMir(fn: JeetahFn, type: VarType): { text: string, object: Unit } {
     const ast = acorn.parseExpressionAt(fn.toString(), 0,
         { ecmaVersion: 2015 }) as unknown as estree.FunctionExpression;
     const code = processFunction(ast, type);
-    const text = genMIR(code);
+    const text = genModule(code);
     return { text, object: code };
 }
 
