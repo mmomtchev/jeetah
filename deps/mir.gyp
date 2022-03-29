@@ -10,6 +10,7 @@
       'include_dirs': [ 'mir' ],
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],
+      'defines!': [ 'DEBUG' ],
       # People who design compiler obiously consider
       # that these do not apply to them
       'cflags': [

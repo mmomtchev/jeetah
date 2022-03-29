@@ -3,17 +3,14 @@
 #include <functional>
 #include <map>
 
-using namespace Napi;
+namespace jeetah {
 
+// Never expose templated variables to the linker - MSVC is capable of unimaginable feats when building them
 template <typename T>
-std::map<std::string, void*> builtins = {
-    {"cos", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::cos))},
-    {"sin", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::sin))},
-    {"sqrt", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::sqrt))},
-    {"pow", reinterpret_cast<void*>(static_cast<T (*)(T, T)>(std::pow))},
-    {"exp", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::exp))},
-    {"log", reinterpret_cast<void*>(static_cast<T (*)(T)>(std::log))}
-};
+static std::map<std::string, void *> builtins = {
+    {"cos", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::cos))},   {"sin", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::sin))},
+    {"sqrt", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::sqrt))}, {"pow", reinterpret_cast<void *>(static_cast<T (*)(T, T)>(std::pow))},
+    {"exp", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::exp))},   {"log", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::log))}};
 
 MIR::MIR(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
@@ -66,7 +63,10 @@ MIR::MIR(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     text = MIR_gen(ctx, 0, item);
 }
 
-MIR::~MIR() { MIR_finish(ctx); }
+MIR::~MIR() {
+    MIR_gen_finish(ctx);
+    MIR_finish(ctx);
+}
 
 template <typename T> void MIR::LinkBuiltins() {
     for (auto const &symbol : builtins<T>) {
@@ -124,3 +124,5 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
 }
 
 NODE_API_MODULE(mir, Init)
+
+}; // namespace jeetah

@@ -1,5 +1,9 @@
+import * as path from 'path';
+import * as binary from '@mapbox/node-pre-gyp';
+
+const binding_path = binary.find(path.resolve(path.join(__dirname, '../package.json')));
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const addon = require('../build/Debug/jeetah-native');
+const addon = require(binding_path);
 
 type VarType = 'Float64' | 'Float32';
 

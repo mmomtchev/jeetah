@@ -5,6 +5,9 @@ import { MIR } from '../lib/binding';
 import { compile } from '../lib/compile';
 
 describe('compilation', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    afterEach((global as any).gc);
+
     it('a+b', () => {
         const m = compile(function add(a: number, b: number) { return a + b; }, 'Float64');
         assert.instanceOf(m, MIR);

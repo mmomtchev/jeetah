@@ -4,10 +4,9 @@
 #include <mir.h>
 #include <napi.h>
 
-enum VarType {
-  Float64 = 0,
-  Float32 = 1
-};
+namespace jeetah {
+
+enum VarType { Float64 = 0, Float32 = 1 };
 
 class MIR : public Napi::ObjectWrap<MIR> {
   public:
@@ -30,3 +29,4 @@ class MIR : public Napi::ObjectWrap<MIR> {
     MIR_item_t item;
     void *text;
 };
+}; // namespace jeetah

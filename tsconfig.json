@@ -1,9 +1,16 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "lib": [ "esnext" ],
+    "lib": [
+      "esnext"
+    ],
     "module": "commonjs",
     "outDir": "./dist",
-    "strict": true
+    "strict": true,
+    "paths": {
+      "@mapbox/node-pre-gyp": [
+        "./lib/mapbox-node-pre-gyp"
+      ]
+    }
   }
 }

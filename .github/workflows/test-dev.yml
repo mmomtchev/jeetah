@@ -12,7 +12,7 @@ on:
 
 
 jobs:
-  unix:
+  release:
 
     runs-on: ${{ matrix.platforms }}
 
@@ -83,4 +83,4 @@ jobs:
         LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.5.0.0 npm test &> asan.output
         true
     - name: Check for memory leaks
-      run: "! egrep -q \"jeetah\" asan.output"
+      run: "! egrep -q \"jeetah::\" asan.output"

@@ -31,6 +31,19 @@
             ]
         },
         {
+            "name": "(vsdbg) Unit tests",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "node",
+            "args": [
+                "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
             "type": "pwa-node",
             "request": "launch",
             "name": "(node) Unit tests",
