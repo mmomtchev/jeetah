@@ -39,5 +39,17 @@
         "allowTemplateLiterals": true
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": "test/*.js",
+      "extends": [
+        "eslint:recommended"
+      ],
+      "plugins": [
+        "mocha",
+        "prefer-arrow"
+      ]
+    }
+  ]
 }
