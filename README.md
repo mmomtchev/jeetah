@@ -28,21 +28,18 @@ Very small subset of the JS language functional
 
 # Example
 
-Input
-```js
-compile(function lapseRate(temp, height) {
-    const g = 9.81;
-    const c = 1005;
-    const Gamma = g / c;
-    return temp - height * Gamma;
-});
-```
+```shell
+ts-node bin/js2m.ts \
+'(temp, height) => {
+	const g = 9.81;
+	const c = 1005;
+	const Gamma = g / c;
+	return temp - height * Gamma;
+}'
 
-Output
-```
-m_lapseRate:	module
-export	lapseRate
-lapseRate:	func d, d:temp, d:height
+m__jeetah_fn_0:	module
+export	_f__jeetah_fn_0
+_f__jeetah_fn_0:	func d, d:temp, d:height
 	local	d:g, d:c, d:Gamma, d:_expr_0, d:_expr_1, d:_expr_2
 		dmov	g, 9.8100000000000005
 		dmov	c, 1005.0000000000000000
@@ -53,7 +50,7 @@ lapseRate:	func d, d:temp, d:height
 		dmov	_expr_2, height
 		dmul	_expr_2, height, Gamma
 		dsub	_expr_1, temp, _expr_2
-		ret     _expr_1
+		ret	_expr_1
 	endfunc
 endmodule
 ```

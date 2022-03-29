@@ -51,6 +51,19 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "(ts-node) js2m",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "node_modules/.bin/ts-node",
+            "args": [
+                "bin/js2m.ts",
+                "(temp, height) => { const g = 9.81; const c = 1005; const Gamma = g / c; return temp - height * Gamma; }"
+            ]
         }
     ]
 }

@@ -10,6 +10,8 @@ type OpPrefix = 'f' | 'd';
 type OpType = 'f' | 'd';
 type VarType = 'Float64' | 'Float32';
 
+type JeetahFn = (...args: number[]) => number;
+
 interface Instruction {
     label?: string;
     op: OpCode;
@@ -84,7 +86,7 @@ function processBinaryExpression(code: Unit, expr: estree.BinaryExpression): Val
     return { ref: temp };
 }
 
-const builtins: Record<string, {arg: number, c: string}> = {
+const builtins: Record<string, { arg: number, c: string }> = {
     'Math.sin': { arg: 1, c: 'sin' },
     'Math.cos': { arg: 1, c: 'cos' },
     'Math.sqrt': { arg: 1, c: 'sqrt' },
@@ -110,7 +112,7 @@ function processCallExpression(code: Unit, expr: estree.CallExpression): Value {
     const fn = builtins[name];
     if (expr.arguments.length !== fn.arg)
         throw new TypeError(`${name} expects ${fn.arg} arguments`);
-    
+
     const args: Value[] = [];
     for (const arg of expr.arguments) {
         const r = processNode(code, arg);
@@ -126,11 +128,11 @@ function processCallExpression(code: Unit, expr: estree.CallExpression): Value {
         op: 'call',
         raw: true,
         output: `_p_${fn.c}`,
-        input: [fn.c, result, ...args.map((a) => a.ref) ]
+        input: [fn.c, result, ...args.map((a) => a.ref)]
     });
     code.imports[name] = true;
 
-    return {ref: result};
+    return { ref: result };
 }
 
 function processNode(code: Unit, node: estree.Node): Value | undefined {
@@ -171,8 +173,8 @@ function processNode(code: Unit, node: estree.Node): Value | undefined {
 }
 
 let fnUid = 0;
-export function processFunction(node: estree.FunctionExpression, type: VarType): Unit {
-    if (node.type != 'FunctionExpression')
+function processFunction(node: estree.FunctionExpression, type: VarType): Unit {
+    if (node.type !== 'FunctionExpression' && node.type !== 'ArrowFunctionExpression')
         throw new TypeError('Passed value is not a function expression');
     if (!node.body || node.body.type !== 'BlockStatement')
         throw new SyntaxError('No function body');
@@ -240,7 +242,7 @@ const opType: Record<VarType, OpType> = {
     'Float64': 'd'
 };
 
-export function genMIR(code: Unit) {
+function genMIR(code: Unit) {
     if (!opPrefix[code.type]) throw new TypeError('Unsupported variable type');
 
     let mir = `m_${code.name}:\tmodule\n`;
@@ -288,10 +290,19 @@ export function genMIR(code: Unit) {
     return mir;
 }
 
-export function compile(fn: (...args: number[]) => number, type: VarType): MIR {
+export function compileToMir(fn: JeetahFn, type: VarType): { text: string, object: Unit } {
     const ast = acorn.parseExpressionAt(fn.toString(), 0,
         { ecmaVersion: 2015 }) as unknown as estree.FunctionExpression;
     const code = processFunction(ast, type);
     const text = genMIR(code);
-    return new MIR(text, type, Object.keys(code.params).length);
+    return { text, object: code };
+}
+
+export function assembleAndLink(code: Unit, text: string) {
+    return new MIR(text, code.type, Object.keys(code.params).length);
+}
+
+export function compile(fn: JeetahFn, type: VarType): MIR {
+    const { text, object } = compileToMir(fn, type);
+    return assembleAndLink(object, text);
 }
