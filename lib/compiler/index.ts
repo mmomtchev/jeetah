@@ -25,7 +25,7 @@ export interface Instruction {
     input?: string[];
 }
 
-export type Variable = 'value' | 'pointer';
+export type Variable = 'value' | 'pointer' | 'offset';
 
 export interface Unit {
     name: string;

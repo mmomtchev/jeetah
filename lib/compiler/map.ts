@@ -17,8 +17,18 @@ export function generateMap(
 
     code.text[0].label = '_map_loop';
 
+    code.variables['_iter_inc'] = 'offset';
+
     if (!code.return)
         throw new TypeError('Function does not have a return value');
+
+    // load the iterator increment
+    code.text.unshift({
+        op: 'mov',
+        raw: true,
+        output: '_iter_inc',
+        input: [opSize[code.type].toString()]
+    });
 
     // instruction pointer is at the end of the loop (the single value body)
 
@@ -36,7 +46,7 @@ export function generateMap(
         op: 'add',
         raw: true,
         output: iter,
-        input: [iter, opSize[code.type].toString()]
+        input: [iter, '_iter_inc']
     });
 
     // increment the result pointer
@@ -44,7 +54,7 @@ export function generateMap(
         op: 'add',
         raw: true,
         output: '_result',
-        input: ['_result', opSize[code.type].toString()]
+        input: ['_result', '_iter_inc']
     });
 
     // end of the loop?
