@@ -67,7 +67,7 @@
     {
       'target_name': 'jeetah',
       'sources': [
-        'src/mirobj.cc'
+        'src/jeetah.cc'
       ],
       'include_dirs': [
         '<!@(node -p "require(\'node-addon-api\').include")'

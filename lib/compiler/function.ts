@@ -22,7 +22,7 @@ export function processFunction(node: estree.FunctionExpression | estree.ArrowFu
     for (const p of node.params) {
         if (p.type !== 'Identifier')
             throw new SyntaxError('Function arguments must be identifiers');
-        code.params[p.name] = true;
+        code.params[p.name] = 'value';
     }
     processNode(code, body);
     return code;
@@ -65,7 +65,7 @@ export function processCallExpression(code: Unit, expr: estree.CallExpression): 
     }
 
     const result = `_callret_${callReturnId++}`;
-    code.variables[result] = true;
+    code.variables[result] = 'value';
     code.text.push({
         op: 'call',
         raw: true,

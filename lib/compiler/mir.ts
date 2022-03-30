@@ -1,4 +1,4 @@
-import { Unit, VarType } from '.';
+import { Unit, Variable, VarType } from '.';
 import { builtins } from './function';
 
 export type OpPrefix = 'f' | 'd';
@@ -12,6 +12,11 @@ const opPrefix: Record<VarType, OpPrefix> = {
 const opType: Record<VarType, OpType> = {
     'Float32': 'f',
     'Float64': 'd'
+};
+
+export const opSize: Record<VarType, number> = {
+    'Float32': 4,
+    'Float64': 8
 };
 
 export function moduleHeader(code: Unit): string {
@@ -48,7 +53,12 @@ export function functionPrologue(code: Unit): string {
     mir += `export\t_f_${code.name}\n`;
     mir += `_f_${code.name}:\tfunc ${opType[code.type]}`;
     if (Object.keys(code.params).length) {
-        mir += ', ' + Object.keys(code.params).map(p => opType[code.type] + ':' + p).join(', ');
+        mir += ', ' + Object.keys(code.params).map((p) => {
+            if (code.params[p] === 'value')
+                return opType[code.type] + ':' + p;
+            else
+                return 'p:' + p;
+        }).join(', ');
     }
     mir += '\n';
     if (Object.keys(code.variables).length) {
@@ -67,6 +77,8 @@ export function functionEpilogue(code: Unit): string {
     return mir;
 }
 
+const getSymbol = (code: Unit, symbol:string): Variable => (code.params[symbol] || code.variables[symbol]);
+
 export function functionText(code: Unit): string {
     if (!opPrefix[code.type]) throw new TypeError('Unsupported variable type');
 
@@ -80,8 +92,10 @@ export function functionText(code: Unit): string {
         if (op.input && op.input.length)
             for (const i of op.input) {
                 mir += ', ';
-                if (typeof i === 'number')
-                    mir += i.toFixed(16);
+                if (op.raw || getSymbol(code, i) === 'value')
+                    mir += i;
+                else if (getSymbol(code, i) === 'pointer')
+                    mir += `${opType[code.type]}:${i}`;
                 else
                     mir += i;
             }

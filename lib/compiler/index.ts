@@ -1,18 +1,19 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
-import { MIR } from '../binding';
 
 import { processBinaryExpression } from './expression';
 import { processFunction, processCallExpression } from './function';
 import { processVariableDeclaration } from './variable';
 import { genModule } from './mir';
+import { generateMap } from './map';
+export { genModule };
 
 export type JeetahFn = (...args: number[]) => number;
 
 export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
     'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
-    'ret' | 'ble' | 'jmp' | 'call';
+    'ret' | 'ubgt' | 'ble' | 'jmp' | 'call';
 
 export type VarType = 'Float64' | 'Float32';
 
@@ -21,23 +22,26 @@ export interface Instruction {
     op: OpCode;
     output?: string;
     raw?: boolean;
-    input?: (string | number)[];
+    input?: string[];
 }
+
+export type Variable = 'value' | 'pointer';
 
 export interface Unit {
     name: string;
     type: VarType;
-    params: Record<string, boolean>;
-    variables: Record<string, boolean>;
+    params: Record<string, Variable>;
+    variables: Record<string, Variable>;
     imports: Record<string, boolean>;
     text: Instruction[];
+    mirText?: string;
     return?: Value;
 
     exprId?: number;
 }
 
 export interface Value {
-    ref: string | number;
+    ref: string;
 }
 
 export function processNode(code: Unit, node: estree.Node): Value | undefined {
@@ -77,7 +81,7 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
         case 'Literal':
             if (typeof node.value !== 'number')
                 throw new SyntaxError('Unsupported literal ' + node.value);
-            return { ref: node.value };
+            return { ref: node.value.toFixed(16) };
         case 'CallExpression':
             return processCallExpression(code, node);
         default:
@@ -86,57 +90,29 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
     }
 }
 
-export function produceLoop(
-    code: Unit,
-    node: estree.Node,
-    iter: string,
-    start: string | number,
-    end: string | number,
-    increment: string | number) {
-
-    code.variables['_main_loop_end'] = true;
-    code.variables['_main_loop_inc'] = true;
-
-    code.text.push({
-        op: 'mov',
-        output: '_main_loop_inc',
-        input: [increment]
-    });
-    code.text.push({
-        op: 'mov',
-        output: '_main_loop_end',
-        input: [end]
-    });
-
-    const loopStart = code.text.length;
-    processNode(code, node);
-    code.text[loopStart].label = '_main_loop';
-
-    code.text.push({
-        op: 'add',
-        output: iter,
-        input: [iter, '_main_loop_inc']
-    });
-    code.text.push({
-        op: 'ble',
-        output: '_main_loop',
-        input: [iter, '_main_loop_end']
-    });
-}
-
-export function compileToMir(fn: JeetahFn, type: VarType): { text: string, object: Unit } {
+export function compileBody(fn: JeetahFn, type: VarType): Unit {
     const ast = acorn.parseExpressionAt(fn.toString(), 0,
         { ecmaVersion: 2015 }) as unknown as estree.FunctionExpression;
     const code = processFunction(ast, type);
+    return code;
+}
+
+export function compile(fn: JeetahFn, type: VarType): Unit {
+    const code = compileBody(fn, type);
+    code.mirText = genModule(code);
+    return code;
+}
+
+export function compileMap(fn: JeetahFn, type: VarType, iter: string): string {
+    const code = compileBody(fn, type);
+    generateMap(code, iter);
     const text = genModule(code);
-    return { text, object: code };
+    return text;
 }
 
-export function assembleAndLink(code: Unit, text: string) {
-    return new MIR(text, code.type, Object.keys(code.params).length);
-}
-
-export function compile(fn: JeetahFn, type: VarType): MIR {
-    const { text, object } = compileToMir(fn, type);
-    return assembleAndLink(object, text);
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(global as any)['Jeetah'] = {
+    compile,
+    compileBody,
+    compileMap
+};

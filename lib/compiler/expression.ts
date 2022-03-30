@@ -15,7 +15,7 @@ export function processBinaryExpression(code: Unit, expr: estree.BinaryExpressio
     if (!code.exprId) code.exprId = 0;
     const temp = `_expr_${code.exprId}`;
     code.exprId++;
-    code.variables[temp] = true;
+    code.variables[temp] = 'value';
 
     const left = processNode(code, expr.left);
     if (!left) throw new SyntaxError('invalid left binary operator ' + expr.operator);
