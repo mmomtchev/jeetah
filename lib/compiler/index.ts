@@ -3,7 +3,7 @@ import * as estree from 'estree';
 
 import { processBinaryExpression } from './expression';
 import { processFunction, processCallExpression } from './function';
-import { processVariableDeclaration } from './variable';
+import { processConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
 import { generateMap } from './map';
 export { genModule };
@@ -79,9 +79,7 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
         case 'Identifier':
             return { ref: node.name };
         case 'Literal':
-            if (typeof node.value !== 'number')
-                throw new SyntaxError('Unsupported literal ' + node.value);
-            return { ref: node.value.toFixed(16) };
+            return processConstant(code, node);
         case 'CallExpression':
             return processCallExpression(code, node);
         default:
