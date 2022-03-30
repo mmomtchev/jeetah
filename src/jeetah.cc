@@ -51,7 +51,7 @@ template <typename T> typename Jeetah<T>::JITFn Jeetah<T>::AssemblyAndLink(Napi:
     }
   if (module == nullptr) throw Napi::Error::New(env, "Compilation failed");
 
-  MIR_item_t text;
+  MIR_item_t text = nullptr;
   for (MIR_item_t f = DLIST_HEAD(MIR_item_t, module->items); f != nullptr; f = DLIST_NEXT(MIR_item_t, f))
     if (f->item_type == MIR_func_item && strcmp(f->u.func->name, nameFn.c_str()) == 0) {
       text = f;
