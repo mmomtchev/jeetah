@@ -49,7 +49,7 @@ export function generateMap(
 
     // end of the loop?
     code.text.push({
-        op: 'ubgt',
+        op: 'ubge',
         raw: true,
         output: '_map_loop_end',
         input: [iter, '_map_data_end']
