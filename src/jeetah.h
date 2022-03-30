@@ -15,16 +15,20 @@ class Jeetah : public Napi::ObjectWrap<Jeetah<T>> {
     virtual ~Jeetah();
 
     Napi::Value Eval(const Napi::CallbackInfo &);
+    Napi::Value Map(const Napi::CallbackInfo &);
 
     static Napi::Function GetClass(Napi::Env);
-    static Napi::Function GetJSRoutine(Napi::Env, const char*);
 
   private:
+    using JITFn = T (*)(...);
+    static Napi::Function GetJSRoutine(Napi::Env, const char*);
+    JITFn AssemblyAndLink(Napi::Env, Napi::Value);
+
     MIR_context_t ctx;
     Napi::FunctionReference jsFn;
     size_t arguments;
 
-    MIR_item_t evalCode;
-    void *evalFunc;
+    JITFn evalFunc;
+    JITFn mapFunc;
 };
 }; // namespace jeetah

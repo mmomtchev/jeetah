@@ -20,6 +20,7 @@ const native = require(binding_path);
 // https://stackoverflow.com/questions/44275172/typescript-declarations-file-for-node-c-addon
 export interface JeetahExpression {
     eval(...args: number[]): number;
+    map(array: TypedArray, iter: string): TypedArray;
 }
 
 export const Float64Expression: {

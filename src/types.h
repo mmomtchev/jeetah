@@ -102,4 +102,8 @@ template <> struct NapiArrayType<size_t> {
   }
 };
 
+template <typename T> inline T *GetTypedArrayPtr(const Napi::TypedArray &array) {
+  return reinterpret_cast<T *>(reinterpret_cast<uint8_t *>(array.ArrayBuffer().Data()) + array.ByteOffset());
+}
+
 } // namespace jeetah

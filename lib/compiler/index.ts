@@ -103,11 +103,11 @@ export function compile(fn: JeetahFn, type: VarType): Unit {
     return code;
 }
 
-export function compileMap(fn: JeetahFn, type: VarType, iter: string): string {
+export function compileMap(fn: JeetahFn, type: VarType, iter: string): Unit {
     const code = compileBody(fn, type);
     generateMap(code, iter);
-    const text = genModule(code);
-    return text;
+    code.mirText = genModule(code);
+    return code;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,4 +1,4 @@
-import { Unit, Variable, VarType } from '.';
+import { Instruction, Unit, VarType } from '.';
 import { builtins } from './function';
 
 export type OpPrefix = 'f' | 'd';
@@ -73,11 +73,18 @@ export function functionEpilogue(code: Unit): string {
 
     if (code.return)
         mir += `\t\tret\t${code.return.ref}\n`;
+    else
+        mir += '\t\tret\n';
 
     return mir;
 }
 
-const getSymbol = (code: Unit, symbol:string): Variable => (code.params[symbol] || code.variables[symbol]);
+const getSymbol = (code: Unit, op: Instruction, symbol: string): string => {
+    const s = code.params[symbol] || code.variables[symbol];
+    if (op.raw || !s) return symbol;
+    if (s === 'pointer') return `${opType[code.type]}:(${symbol})`;
+    return symbol;
+};
 
 export function functionText(code: Unit): string {
     if (!opPrefix[code.type]) throw new TypeError('Unsupported variable type');
@@ -88,16 +95,10 @@ export function functionText(code: Unit): string {
             mir += `${op.label}:\n`;
         mir += `\t\t${(op.raw ? '' : opPrefix[code.type]) + op.op}`;
         if (op.output)
-            mir += `\t${op.output}`;
+            mir += `\t${getSymbol(code, op, op.output)}`;
         if (op.input && op.input.length)
             for (const i of op.input) {
-                mir += ', ';
-                if (op.raw || getSymbol(code, i) === 'value')
-                    mir += i;
-                else if (getSymbol(code, i) === 'pointer')
-                    mir += `${opType[code.type]}:${i}`;
-                else
-                    mir += i;
+                mir += `, ${getSymbol(code, op, i)}`;
             }
         mir += '\n';
     }

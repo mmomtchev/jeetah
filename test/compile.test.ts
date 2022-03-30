@@ -3,7 +3,7 @@ const assert = chai.assert;
 
 import { Float64Expression } from '../lib';
 
-describe('compilation', () => {
+describe('eval', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     afterEach((global as any).gc);
 
