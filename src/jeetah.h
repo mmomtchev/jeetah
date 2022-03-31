@@ -16,6 +16,7 @@ class Jeetah : public Napi::ObjectWrap<Jeetah<T>> {
 
     Napi::Value Eval(const Napi::CallbackInfo &);
     Napi::Value Map(const Napi::CallbackInfo &);
+    Napi::Value MapPrint(const Napi::CallbackInfo &);
 
     static Napi::Function GetClass(Napi::Env);
 

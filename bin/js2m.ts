@@ -1,4 +1,4 @@
-import {  genModule, compileBody } from '../lib';
+import { genModule, compileBody, Float64Expression } from '../lib';
 import { generateMap } from '../lib/compiler/map';
 
 if (!process.argv[2]) {
@@ -14,3 +14,8 @@ if (process.argv[3] == 'map')
 
 const mir = genModule(object);
 console.log(mir);
+
+if (process.argv[3] == 'map') {
+    const expr = new Float64Expression(fn);
+    (expr as any).__mapPrint(undefined, process.argv[4]);
+}

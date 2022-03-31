@@ -4,17 +4,18 @@ import { getInitEnd } from './variable';
 
 export function generateMap(
     code: Unit,
-    iter: string) {
+    input: string) {
 
-    if (!code.params[iter])
-        throw new ReferenceError(`Unknown argument ${iter}`);
+    if (!code.params[input])
+        throw new ReferenceError(`Unknown argument ${input}`);
 
-    if (code.params[iter] !== 'value')
-        throw new TypeError(`Cannot iterate over vector argument ${iter}`);
+    if (code.params[input] !== 'value')
+        throw new TypeError(`Cannot iterate over vector argument ${input}`);
 
-    code.params[iter] = 'pointer';
+    code.params[input] = 'pointer';
     code.params['_result'] = 'pointer';
-    code.params['_map_data_end'] = 'pointer';
+    code.params['_map_data_length'] = 'offset';
+    code.variables['_iter'] = 'offset';
 
     getInitEnd(code);
 
@@ -28,7 +29,15 @@ export function generateMap(
         op: 'mov',
         raw: true,
         output: '_iter_inc',
-        input: [opSize[code.type].toString()]
+        input: [ '1' ]
+    });
+
+    // initialize the iterator
+    code.text.unshift({
+        op: 'mov',
+        raw: true,
+        output: '_iter',
+        input: ['0']
     });
 
     // instruction pointer is at the end of the loop (the single value body)
@@ -42,20 +51,12 @@ export function generateMap(
     // remove the return
     code.return = { ref: '0.0' };
 
-    // increment the iterator pointer
+    // increment the iterator
     code.text.push({
         op: 'add',
         raw: true,
-        output: iter,
-        input: [iter, '_iter_inc']
-    });
-
-    // increment the result pointer
-    code.text.push({
-        op: 'add',
-        raw: true,
-        output: '_result',
-        input: ['_result', '_iter_inc']
+        output: '_iter',
+        input: ['_iter', '_iter_inc']
     });
 
     // end of the loop?
@@ -63,6 +64,6 @@ export function generateMap(
         op: 'ublt',
         raw: true,
         output: '_init_end',
-        input: [iter, '_map_data_end']
+        input: ['_iter', '_map_data_length']
     });
 }

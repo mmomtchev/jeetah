@@ -115,9 +115,23 @@ template <typename T> Napi::Value Jeetah<T>::Map(const Napi::CallbackInfo &info)
     info.Length() < 1 || !info[0].IsTypedArray() ||
     info[0].As<Napi::TypedArray>().TypedArrayType() != NapiArrayType<T>::type)
     throw Napi::TypeError::New(env, "Missing mandatory TypedArray argument");
-  mapFunc(source, target, source + len);
+  mapFunc(source, target, len);
 
   return result;
+}
+
+template <typename T> Napi::Value Jeetah<T>::MapPrint(const Napi::CallbackInfo &info) {
+  Napi::Env env = info.Env();
+
+  if (mapFunc == nullptr) {
+    Napi::Function compile = GetJSRoutine(env, "compileMap");
+    Napi::Value object = compile({jsFn.Value(), Napi::String::New(env, NapiArrayType<T>::name), info[1]});
+    mapFunc = AssemblyAndLink(env, object);
+  }
+
+  MIR_output(ctx, stdout);
+  printf("%p\n", mapFunc);
+  return env.Undefined();
 }
 
 template <typename T> Napi::Function Jeetah<T>::GetClass(Napi::Env env) {
@@ -127,6 +141,7 @@ template <typename T> Napi::Function Jeetah<T>::GetClass(Napi::Env env) {
     {
       Napi::ObjectWrap<Jeetah<T>>::InstanceMethod("eval", &Jeetah::Eval),
       Napi::ObjectWrap<Jeetah<T>>::InstanceMethod("map", &Jeetah::Map),
+      Napi::ObjectWrap<Jeetah<T>>::InstanceMethod("__mapPrint", &Jeetah::MapPrint),
     });
 }
 

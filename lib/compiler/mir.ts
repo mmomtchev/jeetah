@@ -56,8 +56,10 @@ export function functionPrologue(code: Unit): string {
         mir += ', ' + Object.keys(code.params).map((p) => {
             if (code.params[p] === 'value')
                 return opType[code.type] + ':' + p;
-            else
+            else if (code.params[p] === 'pointer')
                 return 'p:' + p;
+            else if (code.params[p] === 'offset')
+                return 'i64:' + p;
         }).join(', ');
     }
     mir += '\n';
@@ -85,7 +87,7 @@ export function functionEpilogue(code: Unit): string {
 const getSymbol = (code: Unit, op: Instruction, symbol: string): string => {
     const s = code.params[symbol] || code.variables[symbol];
     if (op.raw || !s) return symbol;
-    if (s === 'pointer') return `${opType[code.type]}:(${symbol})`;
+    if (s === 'pointer') return `${opType[code.type]}:(${symbol}, _iter, ${opSize[code.type].toString()})`;
     return symbol;
 };
 
