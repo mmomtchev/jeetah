@@ -75,4 +75,11 @@ endmodule
 
 # Performance
 
-Preliminary results show performance very close to `clang -O3` with an inline loop.
+The first results are very promising:
+
+**[The Great C++ Mathematical Expression Parser Benchmark (with 1 argument)](https://github.com/ArashPartow/math-parser-benchmark-project)**
+
+*by Arash Partow (author of ExprTk)*
+
+
+[Results](https://mmomtchev.github.io/jeetah/bench/)

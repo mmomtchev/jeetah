@@ -4,3 +4,10 @@ lib/binding
 
 **/*.js
 !test/compile.test.js
+!bench/*.js
+
+gh-pages/bench/*.html
+!gh-pages/bench/index.html
+
+*.csv
+*.wav
