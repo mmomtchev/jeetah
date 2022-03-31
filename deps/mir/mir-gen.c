@@ -74,6 +74,7 @@ static void varr_error (const char *message) { util_error (NULL, message); }
 
 #define MIR_VARR_ERROR varr_error
 
+#include "mir.h"
 #include "mir-dlist.h"
 #include "mir-bitmap.h"
 #include "mir-htab.h"
