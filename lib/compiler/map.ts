@@ -24,14 +24,6 @@ export function generateMap(
     if (!code.return)
         throw new TypeError('Function does not have a return value');
 
-    // load the iterator increment
-    code.text.unshift({
-        op: 'mov',
-        raw: true,
-        output: '_iter_inc',
-        input: [ '1' ]
-    });
-
     // initialize the iterator
     code.text.unshift({
         op: 'mov',
@@ -56,7 +48,7 @@ export function generateMap(
         op: 'add',
         raw: true,
         output: '_iter',
-        input: ['_iter', '_iter_inc']
+        input: ['_iter', '1']
     });
 
     // end of the loop?
