@@ -1,7 +1,7 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
 
-import { processBinaryExpression } from './expression';
+import { processBinaryExpression, processUnaryExpression } from './expression';
 import { processFunction, processCallExpression } from './function';
 import { processConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
@@ -10,7 +10,7 @@ export { genModule };
 
 export type JeetahFn = (...args: number[]) => number;
 
-export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
+export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' | 'neg' |
     'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
     'ret' | 'jmp' | 'call' |
@@ -77,6 +77,8 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
             return;
         case 'BinaryExpression':
             return processBinaryExpression(code, node);
+        case 'UnaryExpression':
+            return processUnaryExpression(code, node);
         case 'Identifier':
             return { ref: node.name };
         case 'Literal':
