@@ -1,6 +1,19 @@
 import * as estree from 'estree';
 import { Unit, processNode } from '.';
 
+export function getInitEnd(code: Unit): number {
+    let initEnd = code.text.findIndex((op) => op.op === 'label' && op.output === '_init_end');
+    if (initEnd === -1) {
+        initEnd = 0;
+        code.text.unshift({
+            op: 'label',
+            output: '_init_end'
+        });
+    }
+
+    return initEnd;
+}
+
 export function processVariableDeclaration(code: Unit, v: estree.VariableDeclarator) {
     if (v.id.type != 'Identifier') throw new SyntaxError('Unsupported variable declarator ' + v.id.type);
     const name = v.id.name;
@@ -23,6 +36,8 @@ export function processConstant(code: Unit, v: estree.Literal) {
 
     if (typeof v.value !== 'number')
         throw new SyntaxError('Unsupported literal ' + v.value);
+
+    getInitEnd(code);
 
     code.variables[name] = 'value';
     code.text.unshift({

@@ -1,5 +1,6 @@
 import { Unit } from '.';
 import { opSize } from './mir';
+import { getInitEnd } from './variable';
 
 export function generateMap(
     code: Unit,
@@ -15,7 +16,7 @@ export function generateMap(
     code.params['_result'] = 'pointer';
     code.params['_map_data_end'] = 'pointer';
 
-    code.text[0].label = '_map_loop';
+    getInitEnd(code);
 
     code.variables['_iter_inc'] = 'offset';
 
@@ -69,15 +70,12 @@ export function generateMap(
     code.text.push({
         op: 'jmp',
         raw: true,
-        output: '_map_loop'
+        output: '_init_end'
     });
 
     // exit
     code.text.push({
-        label: '_map_loop_end',
-        op: 'mov',
-        raw: true,
-        output: iter,
-        input: ['0']
+        op: 'label',
+        output: '_map_loop_end'
     });
 }

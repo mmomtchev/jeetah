@@ -94,8 +94,10 @@ export function functionText(code: Unit): string {
 
     let mir = '';
     for (const op of code.text) {
-        if (op.label)
-            mir += `${op.label}:\n`;
+        if (op.op === 'label') {
+            mir += `${op.output}:\n`;
+            continue;
+        }
         mir += `\t\t${(op.raw ? '' : opPrefix[code.type]) + op.op}`;
         if (op.output)
             mir += `\t${getSymbol(code, op, op.output)}`;
