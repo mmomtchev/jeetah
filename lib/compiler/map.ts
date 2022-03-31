@@ -60,22 +60,9 @@ export function generateMap(
 
     // end of the loop?
     code.text.push({
-        op: 'ubge',
+        op: 'ublt',
         raw: true,
-        output: '_map_loop_end',
+        output: '_init_end',
         input: [iter, '_map_data_end']
-    });
-
-    // iterate
-    code.text.push({
-        op: 'jmp',
-        raw: true,
-        output: '_init_end'
-    });
-
-    // exit
-    code.text.push({
-        op: 'label',
-        output: '_map_loop_end'
     });
 }

@@ -13,7 +13,8 @@ export type JeetahFn = (...args: number[]) => number;
 export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' |
     'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
-    'ret' | 'ubgt' | 'ubge' | 'ble' | 'jmp' | 'call' |
+    'ret' | 'jmp' | 'call' |
+    'ubgt' | 'ubge' | 'ublt' | 'ble' |
     'label';
 
 export type VarType = 'Float64' | 'Float32';
