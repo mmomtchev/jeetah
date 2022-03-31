@@ -1,5 +1,4 @@
 import { Unit } from '.';
-import { opSize } from './mir';
 import { getInitEnd } from './variable';
 
 export function generateMap(
@@ -12,12 +11,27 @@ export function generateMap(
     if (code.params[input] !== 'value')
         throw new TypeError(`Cannot iterate over vector argument ${input}`);
 
-    code.params[input] = 'pointer';
+    // SSA for the iterator
+    // see https://github.com/vnmakarov/mir/issues/260
+    //
+    // replace the scalar iterator with a pointer
+    // and create a new temporary that will hold
+    // the current element
+    code.variables[input] = 'value';
+    delete code.params[input];
+    code.params = { '_map_data': 'pointer', ...code.params };
+
     code.params['_result'] = 'pointer';
     code.params['_map_data_length'] = 'offset';
     code.variables['_iter'] = 'offset';
 
-    getInitEnd(code);
+    const initEnd = getInitEnd(code);
+    // the SSA temporary
+    code.text.splice(initEnd + 1, 0, {
+        op: 'mov',
+        output: input,
+        input: ['_map_data']
+    });
 
     code.variables['_iter_inc'] = 'offset';
 

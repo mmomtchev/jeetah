@@ -30,8 +30,21 @@ export function processVariableDeclaration(code: Unit, v: estree.VariableDeclara
     }
 }
 
+let constantUid = 0;
 export function processConstant(code: Unit, v: estree.Literal) {
+    const name = `_c_${constantUid++}`;
+
     if (typeof v.value !== 'number')
-        throw new TypeError(`Literal ${v.value} is not a number`);
-    return { ref: v.value.toFixed(16) };
+        throw new SyntaxError('Unsupported literal ' + v.value);
+
+    getInitEnd(code);
+
+    code.variables[name] = 'value';
+    code.text.unshift({
+        op: 'mov',
+        output: name,
+        input: [v.value.toFixed(16)]
+    });
+
+    return { ref: name };
 }

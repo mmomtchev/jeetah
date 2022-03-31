@@ -17,5 +17,6 @@ console.log(mir);
 
 if (process.argv[3] == 'map') {
     const expr = new Float64Expression(fn);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (expr as any).__mapPrint(undefined, process.argv[4]);
 }
