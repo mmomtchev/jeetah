@@ -1,7 +1,7 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
 
-import { processBinaryExpression, processUnaryExpression, processConditionalExpression, processIfStatement } from './expression';
+import { processBinaryExpression, processUnaryExpression, processConditionalExpression, processIfStatement, processLogicalExpression } from './expression';
 import { processFunction, processCallExpression, processReturn } from './function';
 import { processConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
@@ -15,7 +15,7 @@ export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' | 'neg' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
     'ret' | 'jmp' | 'call' |
     'i2f' | 'i2d' |
-    'beq' | 'ubgt' | 'ubge' | 'ublt' | 'ble' |
+    'beq' | 'bne' | 'ubgt' | 'ubge' | 'ublt' | 'ble' |
     'eq' | 'ne' | 'lt' | 'gt' | 'le' | 'ge' |
     'label';
 
@@ -78,6 +78,8 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
             return processBinaryExpression(code, node);
         case 'UnaryExpression':
             return processUnaryExpression(code, node);
+        case 'LogicalExpression':
+            return processLogicalExpression(code, node);
         case 'IfStatement':
             processIfStatement(code, node);
             return;

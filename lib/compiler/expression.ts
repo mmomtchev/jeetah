@@ -17,6 +17,12 @@ const comparisonOps: Record<string, OpCode> = {
     '<=': 'le'
 };
 
+const logicalOps: Record<string, OpCode> = {
+    '&&': 'gt',
+    '||': 'lt',
+};
+
+
 function getExprId(code: Unit): number {
     if (!code.exprId) code.exprId = 0;
     return code.exprId++;
@@ -93,10 +99,55 @@ export function processComparisonExpression(code: Unit, expr: estree.BinaryExpre
     return { ref: temp };
 }
 
-export function processUnaryExpression(code: Unit, expr: estree.UnaryExpression): Value {
-    if (expr.operator !== '-')
-        throw new SyntaxError('invalid unary operation: ' + expr.operator);
+export function processLogicalExpression(code: Unit, expr: estree.LogicalExpression): Value {
 
+    const id = getExprId(code);
+    const temp = `_expr_${id}`;
+    code.variables[temp] = 'value';
+    const end = `_expr_${id}_end`;
+
+    const left = processNode(code, expr.left);
+    if (!left) throw new SyntaxError('invalid left logical argument ' + expr.left);
+
+    code.text.push({
+        op: 'mov',
+        output: temp,
+        input: [left.ref]
+    });
+
+    if (expr.operator == '&&') {
+        code.text.push({
+            op: 'beq',
+            output: end,
+            input: [temp, '0.0']
+        });
+    } else if (expr.operator == '||') {
+        code.text.push({
+            op: 'bne',
+            output: end,
+            input: [temp, '0.0']
+        });
+    } else
+        throw new SyntaxError('?? is not supported');
+
+    const right = processNode(code, expr.right);
+    if (!right) throw new SyntaxError('invalid right logical argument ' + expr.right);
+
+    code.text.push({
+        op: 'mov',
+        output: temp,
+        input: [right.ref]
+    });
+
+    code.text.push({
+        op: 'label',
+        output: end
+    });
+
+    return { ref: temp };
+}
+
+export function processUnaryExpression(code: Unit, expr: estree.UnaryExpression): Value {
     const id = getExprId(code);
     const temp = `_expr_${id}`;
     code.variables[temp] = 'value';
@@ -104,11 +155,47 @@ export function processUnaryExpression(code: Unit, expr: estree.UnaryExpression)
     const arg = processNode(code, expr.argument);
     if (!arg) throw new SyntaxError('invalid unary argument ' + expr.argument);
 
-    code.text.push({
-        op: 'neg',
-        output: temp,
-        input: [arg.ref]
-    });
+    if (expr.operator == '-') {
+        code.text.push({
+            op: 'neg',
+            output: temp,
+            input: [arg.ref]
+        });
+    } else if (expr.operator == '!') {
+        // logical not in MIR is cumbersome
+        const to0 = `_expr_${id}_to0`;
+        const to1 = `_expr_${id}_to1`;
+        code.text.push({
+            op: 'beq',
+            output: to1,
+            input: [arg.ref, '0.0']
+        });
+        code.text.push({
+            op: 'mov',
+            output: temp,
+            input: ['0.0']
+        });
+        code.text.push({
+            op: 'jmp',
+            raw: true,
+            output: to0
+        });
+        code.text.push({
+            op: 'label',
+            output: to1
+        });
+        code.text.push({
+            op: 'mov',
+            output: temp,
+            input: ['1.0']
+        });
+        code.text.push({
+            op: 'label',
+            output: to0
+        });
+    } else
+        throw new SyntaxError('invalid unary operation: ' + expr.operator);
+
     return { ref: temp };
 }
 

@@ -51,7 +51,6 @@ export function generateMap(
         output: '_result',
         input: ['_return_value']
     });
-    // remove the return
 
     // increment the iterator
     code.text.push({

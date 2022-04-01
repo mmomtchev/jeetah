@@ -97,5 +97,41 @@ describe('eval', () => {
         assert.closeTo(m.eval(0), fn(0), 1e-9);
         assert.closeTo(m.eval(-1), fn(-1), 1e-9);
         assert.closeTo(m.eval(-2), fn(-2), 1e-9);
-    })
+    });
+    it('logical not', () => {
+        const fn = (x: number) => {
+            if (!(x == 0)) return x + 2;
+            return x;
+        };
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(2), fn(2), 1e-9);
+        assert.closeTo(m.eval(0), fn(0), 1e-9);
+    });
+    it('logical and', () => {
+        const fn = (x: number) => {
+            if (x >= 1 && x <= 2) return x + 10;
+            return x;
+        };
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(0), fn(0), 1e-9);
+        assert.closeTo(m.eval(1), fn(1), 1e-9);
+        assert.closeTo(m.eval(1.5), fn(1.5), 1e-9);
+        assert.closeTo(m.eval(2), fn(2), 1e-9);
+        assert.closeTo(m.eval(3), fn(3), 1e-9);
+    });
+    it('logical or', () => {
+        const fn = (x: number) => {
+            if (x <= 1 || x >= 2) return x + 10;
+            return x;
+        };
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(0), fn(0), 1e-9);
+        assert.closeTo(m.eval(1), fn(1), 1e-9);
+        assert.closeTo(m.eval(1.5), fn(1.5), 1e-9);
+        assert.closeTo(m.eval(2), fn(2), 1e-9);
+        assert.closeTo(m.eval(3), fn(3), 1e-9);
+    });
 });
