@@ -3,6 +3,8 @@ const process = require('process');
 
 const bench = fs.readdirSync(__dirname).filter((file) => file.match(/\.bench\.js$/));
 
+// Launch with `node bench/bench.js [00-09] [size]
+
 (async () => {
   const sizes = process.argv[3] ? [+process.argv[3]] : [16, 1024, 1024 * 1024];
   for (const size of sizes)

@@ -3,7 +3,7 @@ build
 lib/binding
 
 **/*.js
-!test/compile.test.js
+!test/*.test.js
 !bench/*.js
 
 gh-pages/bench/*.html
