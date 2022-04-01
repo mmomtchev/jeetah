@@ -1,5 +1,5 @@
 import * as estree from 'estree';
-import { Unit, processNode } from '.';
+import { Unit, Value, processNode } from '.';
 
 export function getInitEnd(code: Unit): number {
     let initEnd = code.text.findIndex((op) => op.op === 'label' && op.output === '_func_start');
@@ -14,7 +14,7 @@ export function getInitEnd(code: Unit): number {
     return initEnd;
 }
 
-export function processVariableDeclaration(code: Unit, v: estree.VariableDeclarator) {
+export function processVariableDeclaration(code: Unit, v: estree.VariableDeclarator): void {
     if (v.id.type != 'Identifier') throw new SyntaxError('Unsupported variable declarator ' + v.id.type);
     const name = v.id.name;
     code.variables[name] = 'value';
@@ -30,7 +30,7 @@ export function processVariableDeclaration(code: Unit, v: estree.VariableDeclara
     }
 }
 
-export function processConstant(code: Unit, v: estree.Literal) {
+export function processConstant(code: Unit, v: estree.Literal): Value {
     if (!code.constantId)
         code.constantId = 0;
     const name = `_c_${code.constantId++}`;

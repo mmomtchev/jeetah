@@ -40,7 +40,7 @@
   },
   "overrides": [
     {
-      "files": "**/.ts",
+      "files": "**/*.ts",
       "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",

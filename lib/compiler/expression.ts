@@ -28,6 +28,20 @@ function getExprId(code: Unit): number {
     return code.exprId++;
 }
 
+export function processIdentifier(code: Unit, v: estree.Identifier): Value {
+    const id = getExprId(code);
+    const temp = `_expr_${id}`;
+    code.variables[temp] = 'value';
+
+    code.text.push({
+        op: 'mov',
+        output: temp,
+        input: [v.name]
+    });
+
+    return { ref: temp };
+}
+
 export function processBinaryExpression(code: Unit, expr: estree.BinaryExpression): Value {
     if (arithmeticOps[expr.operator]) return processArithmeticExpression(code, expr);
     if (comparisonOps[expr.operator]) return processComparisonExpression(code, expr);
@@ -293,4 +307,30 @@ export function processConditionalExpression(code: Unit, expr: estree.Conditiona
     });
 
     return { ref: temp };
+}
+
+export function processUpdateExpressin(code: Unit, expr: estree.UpdateExpression): Value {
+    const id = getExprId(code);
+    const temp = `_expr_${id}`;
+
+    if (expr.argument.type !== 'Identifier') throw new TypeError('Update expression argument is not a variable');
+    const arg = expr.argument.name;
+    if (!arg) throw new TypeError('Update expression argument is not a variable');
+
+    if (!expr.prefix) {
+        code.text.push({
+            op: 'mov',
+            output: temp,
+            input: [arg]
+        });
+        code.variables[temp] = 'value';
+    }
+
+    code.text.push({
+        op: expr.operator === '++' ? 'add' : 'sub',
+        output: arg,
+        input: [arg, '1.0' ]
+    });
+
+    return { ref: expr.prefix ? arg : temp };
 }
