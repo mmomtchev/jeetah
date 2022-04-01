@@ -6,8 +6,8 @@ lib/binding
 !test/*.test.js
 !bench/*.js
 
-gh-pages/bench/*.html
-!gh-pages/bench/index.html
+gh-pages/bench/**/*.html
+!gh-pages/bench/**/index.html
 
 *.csv
 *.wav

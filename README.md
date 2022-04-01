@@ -75,11 +75,48 @@ endmodule
 
 # Performance
 
-The first results are very promising:
+The preliminary results are very encouraging:
 
 **[The Great C++ Mathematical Expression Parser Benchmark (with 1 argument)](https://github.com/ArashPartow/math-parser-benchmark-project)**
 
 *by Arash Partow (author of ExprTk)*
 
+## V8 inlining
 
-[Results](https://mmomtchev.github.io/jeetah/bench/)
+V8 inlining can produce very surprising results. `jeetah` outperforms V8 on a single operation starting from about 100 elements.
+However when V8 is allowed to inline its inner loops, this limit goes up to about 2000 elements.
+
+Also check this very important piece of information: https://bugs.chromium.org/p/v8/issues/detail?id=12756
+
+Ie, this `jeetah` call is faster starting from `size>100` elements
+```
+fn.map(array, 'x', r);
+```
+than this V8 code:
+```
+for (let j = 0; j < size; j++)
+	r[j] = fn(array[j]);
+```
+
+However in this case `jeetah` will still require a function call through `node-addon-napi` at every iteration, raising the break-even limit to 2000 elements:
+```
+for (let i = 0; i < many; i++>)
+	fn.map(array, 'x', r);
+```
+while in this case V8 will inline its loop:
+```
+for (let i = 0; i < many; i++>)
+	for (let j = 0; j < size; j++)
+		r[j] = fn(array[j]);
+```
+
+Even if this could be addressed by using an assembly function prologue, it will greatly degrade the code maintainability, and is of no use, since `jeetah` is oriented towards parallelization - which will never have any benefit on small arrays anyways.
+
+[Results](https://mmomtchev.github.io/jeetah/bench/16)
+
+
+# Results
+
+[1024 elements](https://mmomtchev.github.io/jeetah/bench/1024)
+[16K elements](https://mmomtchev.github.io/jeetah/bench/16384)
+[1M elements](https://mmomtchev.github.io/jeetah/bench/1048576)

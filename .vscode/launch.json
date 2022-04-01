@@ -70,6 +70,15 @@
         {
             "type": "pwa-node",
             "request": "launch",
+            "name": "(node) Bench",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bench/bench.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
             "name": "(ts-node) js2m",
             "skipFiles": [
                 "<node_internals>/**"

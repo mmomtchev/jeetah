@@ -97,24 +97,33 @@ template <typename T> Napi::Value Jeetah<T>::Eval(const Napi::CallbackInfo &info
 
 template <typename T> Napi::Value Jeetah<T>::Map(const Napi::CallbackInfo &info) {
   Napi::Env env = info.Env();
+  Napi::TypedArray input = info[0].As<Napi::TypedArray>();
+  const size_t args = info.Length();
 
-  if (info.Length() < 2 || !info[1].IsString()) throw Napi::TypeError::New(env, "Missing mandatory iterator argument");
+  if (args < 1 || !input.IsTypedArray() || input.TypedArrayType() != NapiArrayType<T>::type)
+    throw Napi::TypeError::New(env, "Missing mandatory TypedArray argument");
+
+  if (args < 2 || !info[1].IsString()) throw Napi::TypeError::New(env, "Missing mandatory iterator argument");
+
   if (mapFunc == nullptr) {
     Napi::Function compile = GetJSRoutine(env, "compileMap");
     Napi::Value object = compile({jsFn.Value(), Napi::String::New(env, NapiArrayType<T>::name), info[1]});
     mapFunc = AssemblyAndLink(env, object);
   }
 
-  Napi::TypedArray input = info[0].As<Napi::TypedArray>();
   size_t len = input.ElementLength();
   T *source = GetTypedArrayPtr<T>(input);
-  Napi::TypedArray result = NapiArrayType<T>::New(env, len);
+
+  Napi::TypedArray result;
+  if (args < 3) {
+    result = NapiArrayType<T>::New(env, len);
+  } else {
+    result = info[2].As<Napi::TypedArray>();
+    if (!result.IsTypedArray() || result.TypedArrayType() != NapiArrayType<T>::type)
+      throw Napi::TypeError::New(env, "Target array does not expression type");
+  }
   T *target = GetTypedArrayPtr<T>(result);
 
-  if (
-    info.Length() < 1 || !info[0].IsTypedArray() ||
-    info[0].As<Napi::TypedArray>().TypedArrayType() != NapiArrayType<T>::type)
-    throw Napi::TypeError::New(env, "Missing mandatory TypedArray argument");
   mapFunc(source, target, len);
 
   return result;

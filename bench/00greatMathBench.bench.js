@@ -1,6 +1,6 @@
 const path = require('path');
 const b = require('benny');
-//const { assert } = require('chai');
+global.assert = require('chai').assert;
 const jeetah = require('../lib');
 
 // The Great C++ Mathematical Expression Parser Benchmark (with 1 argument)
@@ -39,50 +39,55 @@ module.exports = async function (type, size, onlyFn) {
     if (!isNaN(onlyFn) && i != onlyFn)
       continue;
     const fn = fns[i];
-    // target array allocation is included
+    // target array allocation is not included
+    // benny takes care of precompiling the functions
+    const r = new allocator(size);
     await b.suite(
       `${fn.toString()}, map() ${type} arrays of ${size} elements`,
-      b.add(`V8`, () => {
-        let params = { fn, size, array, r: undefined, allocator };
+      b.add(`V8 for loop w/precompilation`, () => {
 
         // this is a workaround for a major V8 deficiency:
         // recompilation of mutable functions
         // once V8 inlines a function, it cannot recompile it
 
+        const params = { fn, size, array, r };
         const bench = new Function('params', `{
           // This is the bench
-          params.r = new params.allocator(params.size);
           const { fn, size, array, r } = params;
           for (let j = 0; j < size; j++)
             r[j] = fn(array[j]);
-
-          /*const check = Math.round(Math.random() * (array.length - 1));
-          if (!isNaN(r[check]) && !isNaN(array[check]))
-            assert.closeTo(r[check], fn(array[check]), 1e-9);*/
         }`).bind(null, params);
-
-        // give V8 a chance to compile
-        for (let i = 0; i < 200; i++)
-          bench();
 
         // run the test
         return bench;
       }),
-      b.add(`Jeetah`, () => {
-        let r;
-
-        const e = new expr(fn);
-        // give Jeetah a chance to compile
-        r = e.map(array, 'x');
+      b.add(`V8 naive for loop`, () => {
+        // run the test
         return () => {
           // This is the bench
-          r = e.map(array, 'x');
-
-          /*const check = Math.round(Math.random() * (array.length - 1));
-          if (!isNaN(r[check]) && !isNaN(array[check]))
-            assert.closeTo(r[check], fn(array[check]), 1e-9);*/
-
-          return r;
+          for (let j = 0; j < size; j++)
+            r[j] = fn(array[j]);
+        };
+      }),
+      b.add(`V8 map()`, () => {
+        // run the test
+        return () => {
+          // This is the bench
+          array.map((v, j) => r[j] = fn(array[j]));
+        };
+      }),
+      b.add(`V8 forEach()`, () => {
+        // run the test
+        return () => {
+          // This is the bench
+          array.forEach((v, j) => r[j] = fn(array[j]));
+        };
+      }),
+      b.add(`jeetah map()`, () => {
+        const e = new expr(fn);
+        return () => {
+          // This is the bench
+          e.map(array, 'x', r);
         };
       }),
       b.cycle(),
