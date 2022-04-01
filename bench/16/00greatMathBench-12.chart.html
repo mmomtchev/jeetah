@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
-    <title>(x) => x * 2.2, map() Float64 arrays of 1024 elements</title>
+    <title>(x) => -(Math.sin(3.141 + x) + 1), map() Float64 arrays of 16 elements</title>
     <style>
       body {
         margin: 0;
@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1648825182772" width="16" height="9"></canvas>
+      <canvas id="chart1648826242811" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1648825182772 = document
-        .getElementById('chart1648825182772')
+      const ctx1648826242811 = document
+        .getElementById('chart1648826242811')
         .getContext('2d')
-      const chart1648825182772 = new Chart(ctx1648825182772, {
+      const chart1648826242811 = new Chart(ctx1648826242811, {
         type: 'bar',
         data: {
           labels: ["V8 for loop w/precompilation","V8 naive for loop","V8 map()","V8 forEach()","jeetah map()"],
           datasets: [
             {
-              data: [678269,443226,18351,23246,521260],
-              backgroundColor: ["hsl(120, 85%, 55%)","hsl(78.42, 85%, 55%)","hsl(3.2519999999999922, 85%, 55%)","hsl(4.116000000000008, 85%, 55%)","hsl(92.22, 85%, 55%)"],
-              borderColor: ["hsl(120, 85%, 55%)","hsl(78.42, 85%, 55%)","hsl(3.2519999999999922, 85%, 55%)","hsl(4.116000000000008, 85%, 55%)","hsl(92.22, 85%, 55%)"],
+              data: [1603938,1610186,362734,655463,703323],
+              backgroundColor: ["hsl(119.532, 85%, 55%)","hsl(120, 85%, 55%)","hsl(27.036, 85%, 55%)","hsl(48.852000000000004, 85%, 55%)","hsl(52.416000000000004, 85%, 55%)"],
+              borderColor: ["hsl(119.532, 85%, 55%)","hsl(120, 85%, 55%)","hsl(27.036, 85%, 55%)","hsl(48.852000000000004, 85%, 55%)","hsl(52.416000000000004, 85%, 55%)"],
               borderWidth: 2,
             },
           ],
@@ -72,7 +72,7 @@
           plugins: {
             title: {
               display: true,
-              text: '(x) => x * 2.2, map() Float64 arrays of 1024 elements',
+              text: '(x) => -(Math.sin(3.141 + x) + 1), map() Float64 arrays of 16 elements',
               font: { size: 20 },
               padding: 20,
             },
