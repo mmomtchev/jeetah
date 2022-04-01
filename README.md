@@ -127,3 +127,7 @@ Even if this could be addressed by using an assembly function prologue, it will 
 ## Math functions
 
 The `jeetah` performance gain is mostly because of the more efficient C++ call convention.
+
+## Smaller margins on simple functions and 1M elements
+
+This test is mostly a cache bandwidth competition and very hardware dependent.
