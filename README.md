@@ -81,6 +81,14 @@ The preliminary results are very encouraging:
 
 *by Arash Partow (author of ExprTk)*
 
+## Results
+
+[1024 elements](https://mmomtchev.github.io/jeetah/bench/1024)
+
+[16K elements](https://mmomtchev.github.io/jeetah/bench/16384)
+
+[1M elements](https://mmomtchev.github.io/jeetah/bench/1048576)
+
 ## V8 inlining
 
 V8 inlining can produce very surprising results. `jeetah` outperforms V8 on a single operation starting from about 100 elements.
@@ -112,11 +120,10 @@ for (let i = 0; i < many; i++>)
 
 Even if this could be addressed by using an assembly function prologue, it will greatly degrade the code maintainability, and is of no use, since `jeetah` is oriented towards parallelization - which will never have any benefit on small arrays anyways.
 
+## Constant expression optimization
 
-## Results
+`jeetah` lacks any constant expression optimization - `Math.cos(2.41)` is orders of magnitude slower and also the division by `0.5` which can be a multiplication by `2` is slower.
 
-[1024 elements](https://mmomtchev.github.io/jeetah/bench/1024)
+## Math functions
 
-[16K elements](https://mmomtchev.github.io/jeetah/bench/16384)
-
-[1M elements](https://mmomtchev.github.io/jeetah/bench/1048576)
+The `jeetah` performance gain is mostly because of the more efficient C++ call convention.
