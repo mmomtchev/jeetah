@@ -34,7 +34,7 @@ describe('eval', () => {
         });
         assert.instanceOf(m, Float64Expression);
         const r = m.eval(25, 100);
-        assert.closeTo(r, 24.02388, 1e-6);
+        assert.closeTo(r, 24.02388059701, 1e-9);
     });
     it('Math', () => {
         const m = new Float64Expression(function sqrt(x: number) {
@@ -51,7 +51,7 @@ describe('eval', () => {
         const m = new Float64Expression(fn);
         assert.instanceOf(m, Float64Expression);
         const r = m.eval(Math.PI / 2);
-        assert.closeTo(r, fn(Math.PI / 2), 1e-6);
+        assert.closeTo(r, fn(Math.PI / 2), 1e-9);
     });
     it('Nested functions with temporary arguments', () => {
         const fn = function (x: number) {
@@ -61,5 +61,12 @@ describe('eval', () => {
         assert.instanceOf(m, Float64Expression);
         const r = m.eval(4);
         assert.closeTo(r, 1, 1e-6);
+    });
+    it('Ternary operator', () => {
+        const fn = (x: number) => x > 0 ? x : -x;
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(4), 4, 1e-9);
+        assert.closeTo(m.eval(-4), 4, 1e-9);
     });
 });

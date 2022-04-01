@@ -16,9 +16,9 @@ Depending on the outcome, it (might) replace (one day) partially (or fully) the 
 * *(stretch goal)* Add SSE to MIR (probably as manual custom instructions) and support SSE operations
 
 # Implementation
-* Front-end parsing by `acorn`
-* `jeetah` compiling to `MIR` - *Medium Intermediate Representation*
-* Back-end register allocation and machine code assembly by `MIR`
+* Front-end parsing by [`acorn`](https://github.com/acornjs/acorn)
+* `jeetah` compiling to `MIR` - *Medium Internal Representation*
+* Back-end register allocation and machine code assembly by [`MIR`](https://github.com/vnmakarov/mir)
 
 # Status
 

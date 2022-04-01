@@ -1,7 +1,7 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
 
-import { processBinaryExpression, processUnaryExpression } from './expression';
+import { processBinaryExpression, processUnaryExpression, processConditionalExpression } from './expression';
 import { processFunction, processCallExpression } from './function';
 import { processConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
@@ -14,7 +14,9 @@ export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' | 'neg' |
     'dmov' | 'dadd' | 'dmul' | 'dsub' | 'ddiv' |
     'fmov' | 'fadd' | 'fmul' | 'fsub' | 'fdiv' |
     'ret' | 'jmp' | 'call' |
-    'ubgt' | 'ubge' | 'ublt' | 'ble' |
+    'i2f' | 'i2d' |
+    'beq' | 'ubgt' | 'ubge' | 'ublt' | 'ble' |
+    'eq' | 'ne' | 'lt' | 'gt' | 'le' | 'ge' |
     'label';
 
 export type VarType = 'Float64' | 'Float32';
@@ -39,6 +41,7 @@ export interface Unit {
     return?: Value;
 
     exprId?: number;
+    constantId?: number;
 }
 
 export interface Value {
@@ -79,6 +82,8 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
             return processBinaryExpression(code, node);
         case 'UnaryExpression':
             return processUnaryExpression(code, node);
+        case 'ConditionalExpression':
+            return processConditionalExpression(code, node);
         case 'Identifier':
             return { ref: node.name };
         case 'Literal':
