@@ -84,7 +84,7 @@ The preliminary results are very encouraging:
 ## V8 inlining
 
 V8 inlining can produce very surprising results. `jeetah` outperforms V8 on a single operation starting from about 100 elements.
-However when V8 is allowed to inline its inner loops, this limit goes up to about 2000 elements.
+However when V8 is allowed to inline its inner loops, this limit goes up to about `size>2000` elements.
 
 Also check this very important piece of information: https://bugs.chromium.org/p/v8/issues/detail?id=12756
 
@@ -112,11 +112,11 @@ for (let i = 0; i < many; i++>)
 
 Even if this could be addressed by using an assembly function prologue, it will greatly degrade the code maintainability, and is of no use, since `jeetah` is oriented towards parallelization - which will never have any benefit on small arrays anyways.
 
-[Results](https://mmomtchev.github.io/jeetah/bench/16)
 
-
-# Results
+## Results
 
 [1024 elements](https://mmomtchev.github.io/jeetah/bench/1024)
+
 [16K elements](https://mmomtchev.github.io/jeetah/bench/16384)
+
 [1M elements](https://mmomtchev.github.io/jeetah/bench/1048576)
