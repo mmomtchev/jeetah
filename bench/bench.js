@@ -3,7 +3,7 @@ const process = require('process');
 
 const bench = fs.readdirSync(__dirname).filter((file) => file.match(/\.bench\.js$/));
 
-// Launch with `node bench/bench.js [00-09] [size]
+// Launch with `node bench/bench.js [00-09] [size] [Float64] [fn]
 
 (async () => {
   const sizes = process.argv[3] ? [+process.argv[3]] : [16, 1024, 1024 * 1024];
@@ -22,7 +22,7 @@ const bench = fs.readdirSync(__dirname).filter((file) => file.match(/\.bench\.js
         }
         console.log(`${b}`);
         // eslint-disable-next-line no-await-in-loop
-        await require(`${__dirname}/${b}`)(t, size);
+        await require(`${__dirname}/${b}`)(t, size, +process.argv[5]);
         console.log(`\n\n`);
       }
     }

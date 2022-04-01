@@ -24,7 +24,7 @@ const fns = [
   (x) => x - Math.exp(Math.log(7 + x))
 ];
 
-module.exports = async function (type, size) {
+module.exports = async function (type, size, onlyFn) {
 
   const allocator = global[type + 'Array'];
   const expr = jeetah[type + 'Expression'];
@@ -36,25 +36,37 @@ module.exports = async function (type, size) {
     array[i] = -5 + 10 * (i / (array.length - 1));
 
   for (const i in fns) {
+    if (!isNaN(onlyFn) && i != onlyFn)
+      continue;
     const fn = fns[i];
     // target array allocation is included
     await b.suite(
       `${fn.toString()}, map() ${type} arrays of ${size} elements`,
       b.add(`V8`, () => {
-        let r;
+        let params = { fn, size, array, r: undefined, allocator };
 
-        // give V8 a chance to compile
-        fn(1);
-        return () => {
+        // this is a workaround for a major V8 deficiency:
+        // recompilation of mutable functions
+        // once V8 inlines a function, it cannot recompile it
+
+        const bench = new Function('params', `{
           // This is the bench
-          r = new allocator(size);
-          for (let i = 0; i < size; i++)
-            r[i] = fn(array[i]);
+          params.r = new params.allocator(params.size);
+          const { fn, size, array, r } = params;
+          for (let j = 0; j < size; j++)
+            r[j] = fn(array[j]);
 
           /*const check = Math.round(Math.random() * (array.length - 1));
           if (!isNaN(r[check]) && !isNaN(array[check]))
             assert.closeTo(r[check], fn(array[check]), 1e-9);*/
-        };
+        }`).bind(null, params);
+
+        // give V8 a chance to compile
+        for (let i = 0; i < 200; i++)
+          bench();
+
+        // run the test
+        return bench;
       }),
       b.add(`Jeetah`, () => {
         let r;
@@ -77,7 +89,7 @@ module.exports = async function (type, size) {
       b.complete(),
       b.save({
         file: `00greatMathBench-${i}`,
-        folder: path.resolve(__dirname, '..', 'gh-pages', 'bench'),
+        folder: path.resolve(__dirname, '..', 'gh-pages', 'bench', size.toString()),
         version: require('../package.json').version,
         details: false,
         format: 'chart.html',
