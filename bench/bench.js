@@ -22,7 +22,7 @@ const bench = fs.readdirSync(__dirname).filter((file) => file.match(/\.bench\.js
         }
         console.log(`${b}`);
         // eslint-disable-next-line no-await-in-loop
-        await require(`${__dirname}/${b}`)(t, size, +process.argv[5]);
+        await require(`${__dirname}/${b}`)(t, size, process.argv[5]);
         console.log(`\n\n`);
       }
     }
