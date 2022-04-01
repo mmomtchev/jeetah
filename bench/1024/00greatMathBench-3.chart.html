@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1648817036464" width="16" height="9"></canvas>
+      <canvas id="chart1648822529527" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1648817036464 = document
-        .getElementById('chart1648817036464')
+      const ctx1648822529527 = document
+        .getElementById('chart1648822529527')
         .getContext('2d')
-      const chart1648817036464 = new Chart(ctx1648817036464, {
+      const chart1648822529527 = new Chart(ctx1648822529527, {
         type: 'bar',
         data: {
           labels: ["V8 for loop w/precompilation","V8 naive for loop","V8 map()","V8 forEach()","jeetah map()"],
           datasets: [
             {
-              data: [510945,25532,12634,15084,456680],
-              backgroundColor: ["hsl(120, 85%, 55%)","hsl(6, 85%, 55%)","hsl(2.9639999999999986, 85%, 55%)","hsl(3.5400000000000036, 85%, 55%)","hsl(107.25599999999999, 85%, 55%)"],
-              borderColor: ["hsl(120, 85%, 55%)","hsl(6, 85%, 55%)","hsl(2.9639999999999986, 85%, 55%)","hsl(3.5400000000000036, 85%, 55%)","hsl(107.25599999999999, 85%, 55%)"],
+              data: [503866,428032,18517,22104,466705],
+              backgroundColor: ["hsl(120, 85%, 55%)","hsl(101.94, 85%, 55%)","hsl(4.404000000000002, 85%, 55%)","hsl(5.268000000000001, 85%, 55%)","hsl(111.144, 85%, 55%)"],
+              borderColor: ["hsl(120, 85%, 55%)","hsl(101.94, 85%, 55%)","hsl(4.404000000000002, 85%, 55%)","hsl(5.268000000000001, 85%, 55%)","hsl(111.144, 85%, 55%)"],
               borderWidth: 2,
             },
           ],
