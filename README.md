@@ -83,11 +83,16 @@ The preliminary results are very encouraging:
 
 ## Results
 
-[1024 elements](https://mmomtchev.github.io/jeetah/bench/1024)
+* [16 elements](https://mmomtchev.github.io/jeetah/bench/16)
+With 16 elements V8 is almost always faster unless the expression contains lots of builtins, in this case V8 code inlining is the determining factor
 
-[16K elements](https://mmomtchev.github.io/jeetah/bench/16384)
+* [1024 elements](https://mmomtchev.github.io/jeetah/bench/1024)
+With 1024 elements, `jeetah` sometimes outperforms V8, inlining is much less important
 
-[1M elements](https://mmomtchev.github.io/jeetah/bench/1048576)
+* [16K elements](https://mmomtchev.github.io/jeetah/bench/16384)
+With 16K or more elements, `jeetah` always outperforms V8 except in tests involving constant expressions
+
+* [1M elements](https://mmomtchev.github.io/jeetah/bench/1048576)
 
 ## V8 inlining
 
@@ -97,22 +102,22 @@ However when V8 is allowed to inline its inner loops, this limit goes up to abou
 Also check this very important piece of information: https://bugs.chromium.org/p/v8/issues/detail?id=12756
 
 Ie, this `jeetah` call is faster starting from `size>100` elements
-```
+```js
 fn.map(array, 'x', r);
 ```
 than this V8 code:
-```
+```js
 for (let j = 0; j < size; j++)
 	r[j] = fn(array[j]);
 ```
 
 However in this case `jeetah` will still require a function call through `node-addon-napi` at every iteration, raising the break-even limit to 2000 elements:
-```
+```js
 for (let i = 0; i < many; i++>)
 	fn.map(array, 'x', r);
 ```
 while in this case V8 will inline its loop:
-```
+```js
 for (let i = 0; i < many; i++>)
 	for (let j = 0; j < size; j++)
 		r[j] = fn(array[j]);
