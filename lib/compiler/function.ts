@@ -25,6 +25,10 @@ export function processFunction(node: estree.FunctionExpression | estree.ArrowFu
         code.params[p.name] = 'value';
     }
     processNode(code, body);
+    code.text.push({
+        op: 'label',
+        output: '_func_end'
+    });
     return code;
 }
 
@@ -75,4 +79,24 @@ export function processCallExpression(code: Unit, expr: estree.CallExpression): 
     code.imports[name] = true;
 
     return { ref: result };
+}
+
+export function processReturn(code: Unit, node: estree.ReturnStatement): void {
+    if (node.argument) {
+        const r = processNode(code, node.argument);
+        if (r) {
+            code.variables['_return_value'] = 'value';
+            code.text.push({
+                op: 'mov',
+                output: '_return_value',
+                input: [r.ref]
+            });
+        }
+        // Dead code elimination is Mir's job
+        code.text.push({
+            op: 'jmp',
+            raw: true,
+            output: '_func_end'
+        });
+    }
 }

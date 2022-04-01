@@ -69,4 +69,33 @@ describe('eval', () => {
         assert.closeTo(m.eval(4), 4, 1e-9);
         assert.closeTo(m.eval(-4), 4, 1e-9);
     });
+    it('if/else', () => {
+        const fn = (x: number) => {
+            if (x - 1 > 0) return x / 2;
+            else return -x;
+        };
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(2), fn(2), 1e-9);
+        assert.closeTo(m.eval(1), fn(1), 1e-9);
+        assert.closeTo(m.eval(0), fn(0), 1e-9);
+        assert.closeTo(m.eval(-1), fn(-1), 1e-9);
+    });
+    it('more if/else', () => {
+        function fn(x: number): number {
+            if (x > 1)
+                return x * 2;
+            else
+                if (x < -1)
+                    return x / 2;
+            return x;
+        }
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(2), fn(2), 1e-9);
+        assert.closeTo(m.eval(1), fn(1), 1e-9);
+        assert.closeTo(m.eval(0), fn(0), 1e-9);
+        assert.closeTo(m.eval(-1), fn(-1), 1e-9);
+        assert.closeTo(m.eval(-2), fn(-2), 1e-9);
+    })
 });

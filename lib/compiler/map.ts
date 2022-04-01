@@ -35,9 +35,6 @@ export function generateMap(
 
     code.variables['_iter_inc'] = 'offset';
 
-    if (!code.return)
-        throw new TypeError('Function does not have a return value');
-
     // initialize the iterator
     code.text.unshift({
         op: 'mov',
@@ -52,10 +49,9 @@ export function generateMap(
     code.text.push({
         op: 'mov',
         output: '_result',
-        input: [code.return?.ref]
+        input: ['_return_value']
     });
     // remove the return
-    code.return = { ref: '0.0' };
 
     // increment the iterator
     code.text.push({
@@ -69,7 +65,7 @@ export function generateMap(
     code.text.push({
         op: 'ublt',
         raw: true,
-        output: '_init_end',
+        output: '_func_start',
         input: ['_iter', '_map_data_length']
     });
 }

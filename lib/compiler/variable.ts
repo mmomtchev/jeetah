@@ -2,12 +2,12 @@ import * as estree from 'estree';
 import { Unit, processNode } from '.';
 
 export function getInitEnd(code: Unit): number {
-    let initEnd = code.text.findIndex((op) => op.op === 'label' && op.output === '_init_end');
+    let initEnd = code.text.findIndex((op) => op.op === 'label' && op.output === '_func_start');
     if (initEnd === -1) {
         initEnd = 0;
         code.text.unshift({
             op: 'label',
-            output: '_init_end'
+            output: '_func_start'
         });
     }
 

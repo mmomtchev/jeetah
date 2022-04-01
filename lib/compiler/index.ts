@@ -1,8 +1,8 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
 
-import { processBinaryExpression, processUnaryExpression, processConditionalExpression } from './expression';
-import { processFunction, processCallExpression } from './function';
+import { processBinaryExpression, processUnaryExpression, processConditionalExpression, processIfStatement } from './expression';
+import { processFunction, processCallExpression, processReturn } from './function';
 import { processConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
 import { generateMap } from './map';
@@ -38,7 +38,6 @@ export interface Unit {
     imports: Record<string, boolean>;
     text: Instruction[];
     mirText?: string;
-    return?: Value;
 
     exprId?: number;
     constantId?: number;
@@ -53,7 +52,6 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
         case 'BlockStatement':
             for (const leaf of node.body) {
                 processNode(code, leaf);
-                if (code.return) return code.return;
             }
             return;
         case 'VariableDeclaration':
@@ -61,20 +59,18 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
                 processVariableDeclaration(code, v);
             return;
         case 'ReturnStatement':
-            if (node.argument) {
-                const r = processNode(code, node.argument);
-                if (r) {
-                    code.return = r;
-                    return r;
-                }
-            }
+            processReturn(code, node);
             return;
         case 'ArrowFunctionExpression':
             if (node.body) {
                 const r = processNode(code, node.body);
                 if (r) {
-                    code.return = r;
-                    return r;
+                    code.variables['_return_value'] = 'value';
+                    code.text.push({
+                        op: 'mov',
+                        output: '_return_value',
+                        input: [r.ref]
+                    });
                 }
             }
             return;
@@ -82,6 +78,9 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
             return processBinaryExpression(code, node);
         case 'UnaryExpression':
             return processUnaryExpression(code, node);
+        case 'IfStatement':
+            processIfStatement(code, node);
+            return;
         case 'ConditionalExpression':
             return processConditionalExpression(code, node);
         case 'Identifier':

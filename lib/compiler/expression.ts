@@ -112,6 +112,46 @@ export function processUnaryExpression(code: Unit, expr: estree.UnaryExpression)
     return { ref: temp };
 }
 
+export function processIfStatement(code: Unit, expr: estree.IfStatement): void {
+    const id = getExprId(code);
+
+    const elseLabel = `_cond_${id}_else`;
+    const endLabel = `_cond_${id}_end`;
+
+    const test = processNode(code, expr.test);
+    if (!test) throw new SyntaxError('invalid conditional test ' + expr.test);
+
+    code.text.push({
+        op: 'beq',
+        output: expr.alternate ? elseLabel : endLabel,
+        input: [test.ref, '0.0']
+    });
+
+    processNode(code, expr.consequent);
+
+    if (expr.alternate) {
+        code.text.push({
+            op: 'jmp',
+            raw: true,
+            output: endLabel
+        });
+
+        code.text.push({
+            op: 'label',
+            raw: true,
+            output: elseLabel
+        });
+
+        processNode(code, expr.alternate);
+    }
+
+    code.text.push({
+        op: 'label',
+        raw: true,
+        output: endLabel
+    });
+}
+
 export function processConditionalExpression(code: Unit, expr: estree.ConditionalExpression): Value {
     const id = getExprId(code);
 
@@ -135,7 +175,7 @@ export function processConditionalExpression(code: Unit, expr: estree.Conditiona
     code.text.push({
         op: 'mov',
         output: temp,
-        input: [ consequent.ref ]
+        input: [consequent.ref]
     });
 
     code.text.push({

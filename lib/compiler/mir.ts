@@ -76,8 +76,8 @@ export function functionPrologue(code: Unit): string {
 export function functionEpilogue(code: Unit): string {
     let mir = '';
 
-    if (code.return)
-        mir += `\t\tret\t${code.return.ref}\n`;
+    if (code.variables['_return_value'])
+        mir += `\t\tret\t_return_value\n`;
     else
         mir += '\t\tret\n';
 
