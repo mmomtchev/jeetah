@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
-    <title>(x) => x * 2.2, map() Float64 arrays of 16384 elements</title>
+    <title>(x) => Math.sqrt(1 - Math.sin(2.2 * x) + Math.cos(3.141 / x) / 3.3), map() Float64 arrays of 1024 elements</title>
     <style>
       body {
         margin: 0;
@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1648817361953" width="16" height="9"></canvas>
+      <canvas id="chart1648817117980" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1648817361953 = document
-        .getElementById('chart1648817361953')
+      const ctx1648817117980 = document
+        .getElementById('chart1648817117980')
         .getContext('2d')
-      const chart1648817361953 = new Chart(ctx1648817361953, {
+      const chart1648817117980 = new Chart(ctx1648817117980, {
         type: 'bar',
         data: {
           labels: ["V8 for loop w/precompilation","V8 naive for loop","V8 map()","V8 forEach()","jeetah map()"],
           datasets: [
             {
-              data: [40345,1715,831,956,49614],
-              backgroundColor: ["hsl(97.58399999999999, 85%, 55%)","hsl(4.151999999999992, 85%, 55%)","hsl(2.0040000000000022, 85%, 55%)","hsl(2.316000000000008, 85%, 55%)","hsl(120, 85%, 55%)"],
-              borderColor: ["hsl(97.58399999999999, 85%, 55%)","hsl(4.151999999999992, 85%, 55%)","hsl(2.0040000000000022, 85%, 55%)","hsl(2.316000000000008, 85%, 55%)","hsl(120, 85%, 55%)"],
+              data: [13276,8430,6346,6949,13855],
+              backgroundColor: ["hsl(114.984, 85%, 55%)","hsl(73.00800000000001, 85%, 55%)","hsl(54.959999999999994, 85%, 55%)","hsl(60.19199999999999, 85%, 55%)","hsl(120, 85%, 55%)"],
+              borderColor: ["hsl(114.984, 85%, 55%)","hsl(73.00800000000001, 85%, 55%)","hsl(54.959999999999994, 85%, 55%)","hsl(60.19199999999999, 85%, 55%)","hsl(120, 85%, 55%)"],
               borderWidth: 2,
             },
           ],
@@ -72,7 +72,7 @@
           plugins: {
             title: {
               display: true,
-              text: '(x) => x * 2.2, map() Float64 arrays of 16384 elements',
+              text: '(x) => Math.sqrt(1 - Math.sin(2.2 * x) + Math.cos(3.141 / x) / 3.3), map() Float64 arrays of 1024 elements',
               font: { size: 20 },
               padding: 20,
             },
