@@ -35,11 +35,28 @@ export function processFunction(node: estree.FunctionExpression | estree.ArrowFu
 export const builtins: Record<string, { arg: number, c: string }> = {
     'Math.sin': { arg: 1, c: 'sin' },
     'Math.cos': { arg: 1, c: 'cos' },
+    'Math.sinh': { arg: 1, c: 'sinh' },
+    'Math.cosh': { arg: 1, c: 'cosh' },
+    'Math.tan': { arg: 1, c: 'tan' },
+    'Math.tanh': { arg: 1, c: 'tanh' },
     'Math.sqrt': { arg: 1, c: 'sqrt' },
     'Math.log': { arg: 1, c: 'log' },
+    'Math.log2': { arg: 1, c: 'log2' },
+    'Math.log10': { arg: 1, c: 'log10' },
     'Math.exp': { arg: 1, c: 'exp' },
     'Math.pow': { arg: 2, c: 'pow' },
-    'Math.abs': { arg: 1, c: 'abs' }
+    'Math.abs': { arg: 1, c: 'abs' },
+    'Math.acos': { arg: 1, c: 'acos' },
+    'Math.acosh': { arg: 1, c: 'acosh' },
+    'Math.asin': { arg: 1, c: 'asin' },
+    'Math.asinh': { arg: 1, c: 'asinh' },
+    'Math.atan': { arg: 1, c: 'atan' },
+    'Math.atanh': { arg: 1, c: 'atanh' },
+    'Math.atan2': { arg: 2, c: 'atan2' },
+    'Math.ceil': { arg: 1, c: 'ceil' },
+    'Math.floor': { arg: 1, c: 'floor' },
+    'Math.round': { arg: 1, c: 'round' },
+    'Math.trunc': { arg: 1, c: 'trunc' }
 };
 
 let callReturnId = 0;

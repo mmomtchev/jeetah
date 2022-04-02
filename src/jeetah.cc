@@ -11,11 +11,28 @@ template <typename T>
 static std::map<std::string, void *> builtins = {
   {"cos", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::cos))},
   {"sin", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::sin))},
+  {"sinh", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::sinh))},
+  {"cosh", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::cosh))},
+  {"tan", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::tan))},
+  {"tanh", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::tanh))},
   {"sqrt", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::sqrt))},
   {"pow", reinterpret_cast<void *>(static_cast<T (*)(T, T)>(std::pow))},
   {"exp", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::exp))},
   {"log", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::log))},
-  {"abs", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::abs))}};
+  {"log2", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::log2))},
+  {"log10", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::log10))},
+  {"abs", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::abs))},
+  {"acos", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::acos))},
+  {"acosh", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::acosh))},
+  {"asin", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::asin))},
+  {"asinh", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::asinh))},
+  {"atan", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::atan))},
+  {"atanh", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::atanh))},
+  {"atan2", reinterpret_cast<void *>(static_cast<T (*)(T, T)>(std::atan2))},
+  {"ceil", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::ceil))},
+  {"floor", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::floor))},
+  {"round", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::round))},
+  {"trunc", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::trunc))}};
 
 template <typename T>
 Jeetah<T>::Jeetah(const Napi::CallbackInfo &info)

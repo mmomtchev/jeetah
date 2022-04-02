@@ -28,7 +28,7 @@ describe('map', () => {
             if (x > 10) return x * 2;
             else if (x < 5) return x / 2;
             return x;
-        }
+        };
         const expected = new Float64Array(array.length);
         array.map((v, i) => expected[i] = fn(v));
 
@@ -38,5 +38,5 @@ describe('map', () => {
         const r = m.map(array, 'x');
         assert.instanceOf(r, Float64Array);
         assert.deepEqual(r, expected);
-    })
+    });
 });
