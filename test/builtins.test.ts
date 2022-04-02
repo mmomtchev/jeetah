@@ -3,6 +3,15 @@ const assert = chai.assert;
 
 import { Float64Expression } from '../lib';
 
+function smartNumericalAssert(actual: number, expected: number): void {
+    if (isNaN(expected))
+        assert.isNaN(actual);
+    else if (!isFinite(expected))
+        assert.isFalse(isFinite(actual));
+    else
+        assert.closeTo(actual, expected, 1e-9);
+}
+
 describe('builtins', () => {
     it('Math.cos', () => {
         const fn = (x: number): number => Math.cos(x);
@@ -75,20 +84,9 @@ describe('builtins', () => {
             const fn = new Function('x', `return Math.${fnName}(x)`) as (x: number) => number;
             const m = new Float64Expression(fn);
             
-            if (isNaN(fn(0)))
-                assert.isNaN(m.eval(0));
-            else
-                assert.equal(m.eval(0), fn(0));
-
-            if (isNaN(fn(1)))
-                assert.isNaN(m.eval(1));
-            else
-                assert.equal(m.eval(1), fn(1));
-
-            if (isNaN(fn(1.1)))
-                assert.isNaN(m.eval(1.1));
-            else
-                assert.equal(m.eval(1.1), fn(1.1));
+            smartNumericalAssert(m.eval(0), fn(0));
+            smartNumericalAssert(m.eval(1), fn(1));
+            smartNumericalAssert(m.eval(1.1), fn(1.1));
             assert.isNaN(m.eval(NaN));
         });
     }
@@ -99,5 +97,4 @@ describe('builtins', () => {
         assert.closeTo(m.eval(1, 1), fn(1, 1), 1e-9);
         assert.closeTo(m.eval(1, 0), fn(1, 0), 1e-9);
     });
-
 });
