@@ -14,7 +14,8 @@ static std::map<std::string, void *> builtins = {
   {"sqrt", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::sqrt))},
   {"pow", reinterpret_cast<void *>(static_cast<T (*)(T, T)>(std::pow))},
   {"exp", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::exp))},
-  {"log", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::log))}};
+  {"log", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::log))},
+  {"abs", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::abs))}};
 
 template <typename T>
 Jeetah<T>::Jeetah(const Napi::CallbackInfo &info)

@@ -38,7 +38,8 @@ export const builtins: Record<string, { arg: number, c: string }> = {
     'Math.sqrt': { arg: 1, c: 'sqrt' },
     'Math.log': { arg: 1, c: 'log' },
     'Math.exp': { arg: 1, c: 'exp' },
-    'Math.pow': { arg: 2, c: 'pow' }
+    'Math.pow': { arg: 2, c: 'pow' },
+    'Math.abs': { arg: 1, c: 'abs' }
 };
 
 let callReturnId = 0;
