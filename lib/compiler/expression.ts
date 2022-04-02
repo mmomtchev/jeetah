@@ -23,6 +23,9 @@ function getExprId(code: Unit): number {
 }
 
 export function processIdentifier(code: Unit, v: estree.Identifier): Value {
+    if (!code.variables[v.name] && !code.params[v.name]) {
+        throw new ReferenceError(`Undefined variable ${v.name}`);
+    }
     const id = getExprId(code);
     const temp = `_expr_${id}`;
     code.variables[temp] = 'value';

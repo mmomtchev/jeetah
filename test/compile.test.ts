@@ -178,4 +178,10 @@ describe('eval', () => {
         assert.closeTo(m.eval(0), fn(0), 1e-9);
         assert.closeTo(m.eval(1), fn(1), 1e-9);
     });
+    it('access global objects', () => {
+        const fn = (x: number): number => Math.cos(Math.PI + x);
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.equal(m.eval(Math.PI / 2), fn(Math.PI / 2));
+    });
 });

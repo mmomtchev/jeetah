@@ -14,6 +14,23 @@ export function getInitEnd(code: Unit): number {
     return initEnd;
 }
 
+function addTemporary(code: Unit, value: number | Value): Value {
+    getInitEnd(code);
+
+    if (!code.tempId)
+        code.tempId = 0;
+    const name = `_temp_${code.tempId++}`;
+
+    code.variables[name] = 'value';
+    code.text.unshift({
+        op: 'mov',
+        output: name,
+        input: [typeof value === 'number' ? value.toFixed(16) : value.ref]
+    });
+
+    return { ref: name };
+}
+
 export function processVariableDeclaration(code: Unit, v: estree.VariableDeclarator): void {
     if (v.id.type != 'Identifier') throw new SyntaxError('Unsupported variable declarator ' + v.id.type);
     const name = v.id.name;
@@ -31,21 +48,32 @@ export function processVariableDeclaration(code: Unit, v: estree.VariableDeclara
 }
 
 export function processConstant(code: Unit, v: estree.Literal): Value {
-    if (!code.constantId)
-        code.constantId = 0;
-    const name = `_c_${code.constantId++}`;
-
     if (typeof v.value !== 'number')
         throw new SyntaxError('Unsupported literal ' + v.value);
 
-    getInitEnd(code);
+    return addTemporary(code, v.value);
+}
 
-    code.variables[name] = 'value';
-    code.text.unshift({
-        op: 'mov',
-        output: name,
-        input: [v.value.toFixed(16)]
-    });
+export function processGlobalConstant(code: Unit, v: estree.MemberExpression | estree.Identifier): Value {
+    let obj: Record<string, unknown> | undefined;
+    let name = '';
 
-    return { ref: name };
+    if (v.type === 'MemberExpression') {
+        if (v.object.type !== 'Identifier' || v.property.type !== 'Identifier')
+            throw new SyntaxError('Indirect member expressions are not supported');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        obj = (global as unknown as Record<string, unknown>)[v.object.name] as Record<string, unknown>;
+        if (obj === undefined)
+            throw new ReferenceError(`Object ${v.object.name} is undefined`);
+        name = v.property.name;
+    } else {
+        obj = global as unknown as Record<string, unknown>;
+        name = v.name;
+    }
+
+    const val = obj[name];
+    if (val === undefined || typeof val !== 'number')
+        throw new TypeError(`${name} is not a number`);
+
+    return addTemporary(code, val);
 }

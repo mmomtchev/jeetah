@@ -12,7 +12,7 @@ import {
     processAssignmentExpression
 } from './expression';
 import { processFunction, processCallExpression, processReturn } from './function';
-import { processConstant, processVariableDeclaration } from './variable';
+import { processConstant, processGlobalConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
 import { generateMap } from './map';
 export { genModule };
@@ -49,7 +49,7 @@ export interface Unit {
     mirText?: string;
 
     exprId?: number;
-    constantId?: number;
+    tempId?: number;
 }
 
 export interface Value {
@@ -104,6 +104,8 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
             return processConditionalExpression(code, node);
         case 'Identifier':
             return processIdentifier(code, node);
+        case 'MemberExpression':
+            return processGlobalConstant(code, node);
         case 'Literal':
             return processConstant(code, node);
         case 'CallExpression':
