@@ -17,12 +17,6 @@ const comparisonOps: Record<string, OpCode> = {
     '<=': 'le'
 };
 
-const logicalOps: Record<string, OpCode> = {
-    '&&': 'gt',
-    '||': 'lt',
-};
-
-
 function getExprId(code: Unit): number {
     if (!code.exprId) code.exprId = 0;
     return code.exprId++;
@@ -309,7 +303,7 @@ export function processConditionalExpression(code: Unit, expr: estree.Conditiona
     return { ref: temp };
 }
 
-export function processUpdateExpressin(code: Unit, expr: estree.UpdateExpression): Value {
+export function processUpdateExpression(code: Unit, expr: estree.UpdateExpression): Value {
     const id = getExprId(code);
     const temp = `_expr_${id}`;
 
@@ -329,8 +323,38 @@ export function processUpdateExpressin(code: Unit, expr: estree.UpdateExpression
     code.text.push({
         op: expr.operator === '++' ? 'add' : 'sub',
         output: arg,
-        input: [arg, '1.0' ]
+        input: [arg, '1.0']
     });
 
     return { ref: expr.prefix ? arg : temp };
+}
+
+export function processAssignmentExpression(code: Unit, expr: estree.AssignmentExpression): Value {
+    const right = processNode(code, expr.right);
+    if (!right) throw new TypeError('Invalid right side of assignment ' + expr.right);
+
+    if (expr.left.type !== 'Identifier') throw new TypeError('Invalid left side of assignment');
+    const variable = expr.left.name;
+
+    let combOp: OpCode | null = null;
+    if (expr.operator.length > 1) {
+        if (!arithmeticOps[expr.operator[0]])
+            throw new SyntaxError(`Operator ${expr.operator} not supported`);
+        combOp = arithmeticOps[expr.operator[0]];
+    }
+    if (combOp) {
+        code.text.push({
+            op: combOp,
+            output: variable,
+            input: [variable, right.ref]
+        });
+    } else {
+        code.text.push({
+            op: 'mov',
+            output: variable,
+            input: [right.ref]
+        });
+    }
+
+    return { ref: variable };
 }

@@ -1,7 +1,16 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
 
-import { processBinaryExpression, processUnaryExpression, processConditionalExpression, processIfStatement, processLogicalExpression, processUpdateExpressin, processIdentifier } from './expression';
+import {
+    processBinaryExpression,
+    processUnaryExpression,
+    processConditionalExpression,
+    processIfStatement,
+    processLogicalExpression,
+    processUpdateExpression,
+    processIdentifier,
+    processAssignmentExpression
+} from './expression';
 import { processFunction, processCallExpression, processReturn } from './function';
 import { processConstant, processVariableDeclaration } from './variable';
 import { genModule } from './mir';
@@ -54,9 +63,15 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
                 processNode(code, leaf);
             }
             return;
+        case 'ExpressionStatement':
+            processNode(code, node.expression);
+            return;
         case 'VariableDeclaration':
             for (const v of node.declarations)
                 processVariableDeclaration(code, v);
+            return;
+        case 'AssignmentExpression':
+            processAssignmentExpression(code, node);
             return;
         case 'ReturnStatement':
             processReturn(code, node);
@@ -81,7 +96,7 @@ export function processNode(code: Unit, node: estree.Node): Value | undefined {
         case 'LogicalExpression':
             return processLogicalExpression(code, node);
         case 'UpdateExpression':
-            return processUpdateExpressin(code, node);
+            return processUpdateExpression(code, node);
         case 'IfStatement':
             processIfStatement(code, node);
             return;

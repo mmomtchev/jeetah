@@ -108,7 +108,7 @@ describe('eval', () => {
         const fn = (x: number) => {
             const c = x + x++;
             return c + x;
-        }
+        };
         const m = new Float64Expression(fn);
         assert.instanceOf(m, Float64Expression);
         assert.closeTo(m.eval(2), fn(2), 1e-9);
@@ -161,6 +161,18 @@ describe('eval', () => {
         const fn = (x: number) => {
             return x || ++x;
         };
+        const m = new Float64Expression(fn);
+        assert.instanceOf(m, Float64Expression);
+        assert.closeTo(m.eval(0), fn(0), 1e-9);
+        assert.closeTo(m.eval(1), fn(1), 1e-9);
+    });
+    it('assignment', () => {
+        function fn(x: number): number {
+            let a;
+            a = 0;
+            a += x * 2;
+            return a;
+        }
         const m = new Float64Expression(fn);
         assert.instanceOf(m, Float64Expression);
         assert.closeTo(m.eval(0), fn(0), 1e-9);
