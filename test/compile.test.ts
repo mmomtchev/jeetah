@@ -42,7 +42,7 @@ describe('eval', () => {
         });
         assert.instanceOf(m, Float64Expression);
         const r = m.eval(2);
-        assert.closeTo(r, Math.SQRT2, 1e-6);
+        assert.closeTo(r, Math.SQRT2, 1e-9);
     });
     it('Functions with temporaries', () => {
         const fn = function trig(x: number) {

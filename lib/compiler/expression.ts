@@ -1,5 +1,6 @@
 import * as estree from 'estree';
 import { Unit, OpCode, Value, processNode } from '.';
+import { addConstant } from './variable';
 
 const arithmeticOps: Record<string, OpCode> = {
     '+': 'add',
@@ -130,13 +131,13 @@ export function processLogicalExpression(code: Unit, expr: estree.LogicalExpress
         code.text.push({
             op: 'beq',
             output: end,
-            input: [temp, '0.0']
+            input: [temp, addConstant(code, 0).ref]
         });
     } else if (expr.operator == '||') {
         code.text.push({
             op: 'bne',
             output: end,
-            input: [temp, '0.0']
+            input: [temp, addConstant(code, 0).ref]
         });
     } else
         throw new SyntaxError('?? is not supported');
@@ -179,12 +180,12 @@ export function processUnaryExpression(code: Unit, expr: estree.UnaryExpression)
         code.text.push({
             op: 'beq',
             output: to1,
-            input: [arg.ref, '0.0']
+            input: [arg.ref, addConstant(code, 0).ref]
         });
         code.text.push({
             op: 'mov',
             output: temp,
-            input: ['0.0']
+            input: [addConstant(code, 0).ref]
         });
         code.text.push({
             op: 'jmp',
@@ -222,7 +223,7 @@ export function processIfStatement(code: Unit, expr: estree.IfStatement): void {
     code.text.push({
         op: 'beq',
         output: expr.alternate ? elseLabel : endLabel,
-        input: [test.ref, '0.0']
+        input: [test.ref, addConstant(code, 0).ref]
     });
 
     processNode(code, expr.consequent);
@@ -264,7 +265,7 @@ export function processConditionalExpression(code: Unit, expr: estree.Conditiona
     code.text.push({
         op: 'beq',
         output: elseLabel,
-        input: [test.ref, '0.0']
+        input: [test.ref, addConstant(code, 0).ref]
     });
 
     const consequent = processNode(code, expr.consequent);

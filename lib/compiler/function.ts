@@ -18,7 +18,7 @@ export function processFunction(node: estree.FunctionExpression | estree.ArrowFu
     } else {
         name = node.id.name;
     }
-    const code: Unit = { name, text: [], params: {}, variables: {}, imports: {}, type };
+    const code: Unit = { name, text: [], params: {}, variables: {}, imports: {}, constants: {}, type };
     for (const p of node.params) {
         if (p.type !== 'Identifier')
             throw new SyntaxError('Function arguments must be identifiers');

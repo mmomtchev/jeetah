@@ -14,18 +14,20 @@ export function getInitEnd(code: Unit): number {
     return initEnd;
 }
 
-function addTemporary(code: Unit, value: number | Value): Value {
-    getInitEnd(code);
+export function addConstant(code: Unit, value: number): Value {
+    const existing = Object.keys(code.constants).find((c) => code.constants[c] === value);
+    if (existing !== undefined)
+        return { ref: existing };
 
     if (!code.tempId)
         code.tempId = 0;
-    const name = `_temp_${code.tempId++}`;
+    const name = `_constant_${code.tempId++}`;
 
-    code.variables[name] = 'value';
+    code.constants[name] = value;
     code.text.unshift({
         op: 'mov',
         output: name,
-        input: [typeof value === 'number' ? value.toFixed(16) : value.ref]
+        input: [value.toFixed(16)]
     });
 
     return { ref: name };
@@ -51,7 +53,7 @@ export function processConstant(code: Unit, v: estree.Literal): Value {
     if (typeof v.value !== 'number')
         throw new SyntaxError('Unsupported literal ' + v.value);
 
-    return addTemporary(code, v.value);
+    return addConstant(code, v.value);
 }
 
 export function processGlobalConstant(code: Unit, v: estree.MemberExpression | estree.Identifier): Value {
@@ -75,5 +77,5 @@ export function processGlobalConstant(code: Unit, v: estree.MemberExpression | e
     if (val === undefined || typeof val !== 'number')
         throw new TypeError(`${name} is not a number`);
 
-    return addTemporary(code, val);
+    return addConstant(code, val);
 }

@@ -63,6 +63,9 @@ export function functionPrologue(code: Unit): string {
         }).join(', ');
     }
     mir += '\n';
+    if (Object.keys(code.constants).length) {
+        mir += '\tlocal\t' + Object.keys(code.constants).map(v => `${opType[code.type]}:${v}`).join(', ') + '\n';
+    }
     if (Object.keys(code.variables).length) {
         mir += '\tlocal\t' + Object.keys(code.variables).map(v => {
             const type = code.variables[v] === 'offset' ? 'i64' : opType[code.type];

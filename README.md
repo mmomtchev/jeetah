@@ -125,9 +125,9 @@ for (let i = 0; i < many; i++>)
 
 Even if this could be addressed by using an assembly function prologue, it will greatly degrade the code maintainability, and is of no use, since `jeetah` is oriented towards parallelization - which will never have any benefit on small arrays anyways.
 
-## Constant expression optimization
+## Constant propagation
 
-`jeetah` lacks any constant expression optimization - `Math.cos(2.41)` is orders of magnitude slower and also the division by `0.5` which can be a multiplication by `2` is slower.
+`jeetah` lacks any constant propagation - `Math.cos(2.41)` is orders of magnitude slower and also the division by `0.5` which can be a multiplication by `2` is slower.
 
 ## Math functions
 

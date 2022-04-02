@@ -44,6 +44,7 @@ export interface Unit {
     type: VarType;
     params: Record<string, Variable>;
     variables: Record<string, Variable>;
+    constants: Record<string, number>;
     imports: Record<string, boolean>;
     text: Instruction[];
     mirText?: string;
