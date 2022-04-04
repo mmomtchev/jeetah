@@ -23,8 +23,7 @@ Depending on the outcome, it (might) replace (one day) partially (or fully) the 
 # Status
 
 Not usable
-Very early stage
-Very small subset of the JS language functional
+Project is to be merged into `ExprTk.js` 3.0 if it is deemed viable
 
 # Example
 
@@ -69,6 +68,55 @@ _f__jeetah_fn_0:	func d, d:x
 		call	_p_sqrt, sqrt, _callret_0, x
 		call	_p_pow, pow, _callret_1, _callret_0, 2.0000000000000000
 		ret	_callret_1
+	endfunc
+endmodule
+```
+
+Produce code for executing a `map()` over an array
+
+```
+$ ts-node bin/js2m.ts '(x) => x >= 0 && x < 5 ? Math.sqrt(x + 2) : -x' map x
+
+m__jeetah_fn_0:	module
+_p_sqrt:	proto d, d:arg0
+import	sqrt
+export	_f__jeetah_fn_0
+_f__jeetah_fn_0:	func d, p:_map_data, p:_result, i64:_map_data_length
+	local	d:_constant_0, d:_constant_1, d:_constant_2
+	local	d:_cond_0, d:_expr_1, i64:_expr_i64_2, d:_expr_2, d:_expr_3, i64:_expr_i64_4, d:_expr_4, d:_expr_5, d:_expr_6, d:_expr_7, d:_callret_0, d:_expr_8, d:_expr_9, d:_return_value, d:x, i64:_iter, i64:_iter_inc
+		mov	_iter, 0
+_func_start:
+		dmov	x, d:(_map_data, _iter, 8)
+		dmov	_constant_2, 2.0000000000000000
+		dmov	_constant_1, 5.0000000000000000
+		dmov	_constant_0, 0.0000000000000000
+		dmov	_expr_3, x
+		dge	_expr_i64_2, _expr_3, _constant_0
+		i2d	_expr_2, _expr_i64_2
+		dmov	_expr_1, _expr_2
+		dbeq	_expr_1_end, _expr_1, _constant_0
+		dmov	_expr_5, x
+		dlt	_expr_i64_4, _expr_5, _constant_1
+		i2d	_expr_4, _expr_i64_4
+		dmov	_expr_1, _expr_4
+_expr_1_end:
+		dbeq	_cond_0_else, _expr_1, _constant_0
+		dmov	_expr_7, x
+		dadd	_expr_6, _expr_7, _constant_2
+		call	_p_sqrt, sqrt, _callret_0, _expr_6
+		dmov	_cond_0, _callret_0
+		jmp	_cond_0_end
+_cond_0_else:
+		dmov	_expr_9, x
+		dneg	_expr_8, _expr_9
+		dmov	_cond_0, _expr_8
+_cond_0_end:
+		dmov	_return_value, _cond_0
+_func_end:
+		dmov	d:(_result, _iter, 8), _return_value
+		add	_iter, _iter, 1
+		ublt	_func_start, _iter, _map_data_length
+		ret	_return_value
 	endfunc
 endmodule
 ```

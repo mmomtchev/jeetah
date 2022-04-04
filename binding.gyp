@@ -1,7 +1,7 @@
 {
   'variables': {
     'enable_asan%': 'false',
-    'enable_coverage%': 'false',
+    'enable_coverage%': 'false'
   },
   'target_defaults': {
     'cflags!': [ '-fno-exceptions', '-fno-rtti', '-fvisibility=default' ],
