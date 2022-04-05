@@ -93,6 +93,10 @@ template <typename T> Napi::Value Jeetah<T>::Eval(const Napi::CallbackInfo &info
 
   T r = T(0);
 
+  // There is an ancient and obscure deficiency of the C call convention
+  // (ISO C99 6.5.2.2.7), when calling a variadic function
+  // all types are promoted to the largest similar type (char/short->long, float->double)
+  // When using va_arg, it handles this transparently, but we are using assembly
   switch (arguments) {
     case 0: {
       r = evalFunc();
@@ -100,12 +104,13 @@ template <typename T> Napi::Value Jeetah<T>::Eval(const Napi::CallbackInfo &info
     case 1: {
       if (info.Length() < 1 || !info[0].IsNumber())
         throw Napi::TypeError::New(env, "Missing mandatory number argument");
-      r = evalFunc(info[0].ToNumber().DoubleValue());
+      r = reinterpret_cast<T (*)(T)>(evalFunc)(static_cast<T>(info[0].ToNumber().DoubleValue()));
     } break;
     case 2: {
       if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber())
         throw Napi::TypeError::New(env, "Missing mandatory number argument");
-      r = evalFunc(info[0].ToNumber().DoubleValue(), info[1].ToNumber().DoubleValue());
+      r = reinterpret_cast<T (*)(T, T)>(evalFunc)(
+        static_cast<T>(info[0].ToNumber().DoubleValue()), static_cast<T>(info[1].ToNumber().DoubleValue()));
     } break;
     default: throw Napi::TypeError::New(env, "Jeetah can't count to more than 2 yet");
   }
