@@ -62,6 +62,9 @@ export const builtins: Record<string, { arg: number, c: string }> = {
 let callReturnId = 0;
 export function processCallExpression(code: Unit, expr: estree.CallExpression): Value {
     let name;
+    if (code.type !== 'Float32' && code.type !== 'Float64')
+        throw new TypeError(`${code.type} has no Math builtins`);
+
     if (expr.callee.type === 'MemberExpression') {
         if (expr.callee.object.type !== 'Identifier' || expr.callee.property.type !== 'Identifier')
             throw new SyntaxError('Indirect call expressions are not yet supported');

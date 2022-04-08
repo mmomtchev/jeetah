@@ -28,7 +28,7 @@ export type OpCode = 'mov' | 'add' | 'mul' | 'sub' | 'div' | 'neg' |
     'eq' | 'ne' | 'lt' | 'gt' | 'le' | 'ge' |
     'label';
 
-export type VarType = 'Float64' | 'Float32';
+export type VarType = 'Float64' | 'Float32' | 'Uint32' | 'Int32';
 
 export interface Instruction {
     op: OpCode;

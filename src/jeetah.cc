@@ -34,6 +34,9 @@ static std::map<std::string, void *> builtins = {
   {"round", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::round))},
   {"trunc", reinterpret_cast<void *>(static_cast<T (*)(T)>(std::trunc))}};
 
+template <> std::map<std::string, void*> builtins<uint32_t> = {};
+template <> std::map<std::string, void *> builtins<int32_t> = {};
+
 template <typename T>
 Jeetah<T>::Jeetah(const Napi::CallbackInfo &info)
   : Napi::ObjectWrap<Jeetah<T>>::ObjectWrap(info), evalFunc(nullptr), mapFunc(nullptr) {
@@ -188,6 +191,8 @@ template <typename T> Napi::Function Jeetah<T>::GetJSRoutine(Napi::Env env, cons
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "Float64Expression"), Jeetah<double>::GetClass(env));
   exports.Set(Napi::String::New(env, "Float32Expression"), Jeetah<float>::GetClass(env));
+  exports.Set(Napi::String::New(env, "Uint32Expression"), Jeetah<uint32_t>::GetClass(env));
+  exports.Set(Napi::String::New(env, "Int32Expression"), Jeetah<int32_t>::GetClass(env));
   return exports;
 }
 

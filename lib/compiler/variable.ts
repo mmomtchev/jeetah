@@ -14,10 +14,18 @@ export function getInitEnd(code: Unit): number {
     return initEnd;
 }
 
+function formatConstant(code: Unit, value: number): string {
+    if (code.type === 'Float32' || code.type === 'Float64')
+        return value.toFixed(16);
+    return value.toString();
+}
+
 export function addConstant(code: Unit, value: number): Value {
     const existing = Object.keys(code.constants).find((c) => code.constants[c] === value);
     if (existing !== undefined)
         return { ref: existing };
+
+    getInitEnd(code);
 
     if (!code.tempId)
         code.tempId = 0;
@@ -27,7 +35,7 @@ export function addConstant(code: Unit, value: number): Value {
     code.text.unshift({
         op: 'mov',
         output: name,
-        input: [value.toFixed(16)]
+        input: [formatConstant(code, value)]
     });
 
     return { ref: name };

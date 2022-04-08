@@ -29,4 +29,30 @@ describe('types', () => {
             assert.deepEqual(actual, expected);
         });
     }
+
+    for (const t of ['Int32']) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const expr = (jeetah as any)[`${t}Expression`];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const alloc = (global as any)[`${t}Array`];
+        it(t, () => {
+            const fn = function add(a: number, b: number) { return a * b; };
+            const m = new expr(fn);
+            assert.instanceOf(m, expr);
+            assert.equal(m.eval(2, 3), fn(2, 3));
+
+            const fnArray = (x: number) => x + 3;
+            const array = new alloc([-1, 0, 1, 2, 3, 4]);
+            const expected = array.map(fnArray);
+            const e = new expr(fnArray);
+            const actual = e.map(array, 'x');
+            assert.deepEqual(actual, expected);
+
+            const fnCos = (x: number) => Math.cos(x);
+            assert.throws(() => {
+                const e = new expr(fnCos);
+                e.eval(2);
+            }, /no Math builtins/);
+        });
+    }
 });

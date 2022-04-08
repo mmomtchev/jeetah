@@ -31,4 +31,13 @@ export const Float32Expression: {
     new(fn: JeetahFn): JeetahExpression
 } = native.Float32Expression;
 
-export type JeetahConstructor = typeof Float32Expression | typeof Float64Expression;
+export const Uint32Expression: {
+    new(fn: JeetahFn): JeetahExpression
+} = native.Uint32Expression;
+
+export const Int32Expression: {
+    new(fn: JeetahFn): JeetahExpression
+} = native.Int32Expression;
+
+export type JeetahConstructor = typeof Float32Expression | typeof Float64Expression |
+    typeof Uint32Expression | typeof Int32Expression;
