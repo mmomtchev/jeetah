@@ -120,6 +120,8 @@ function getOpCode(code: Unit, op: Instruction): string {
     if (op.raw) return op.op;
     if (op.op === 'mov' && code.type != 'Float32' && code.type != 'Float64')
         return op.op;
+    if (['mul', 'add', 'sub', 'beq', 'bne'].includes(op.op) && code.type == 'Uint32')
+        return op.op + opSuffix[code.type];
     return opPrefix[code.type] + op.op + opSuffix[code.type];
 }
 

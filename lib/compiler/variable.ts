@@ -15,8 +15,10 @@ export function getInitEnd(code: Unit): number {
 }
 
 function formatConstant(code: Unit, value: number): string {
-    if (code.type === 'Float32' || code.type === 'Float64')
+    if (code.type === 'Float64')
         return value.toFixed(16);
+    if (code.type === 'Float32')
+        return value.toFixed(8) + 'f';
     return value.toString();
 }
 
