@@ -13,7 +13,7 @@ describe('types', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const alloc = (global as any)[`${t}Array`];
         it(t, () => {
-            const fn = function add(a: number, b: number) { return a / b; };
+            const fn = function add(a: number, b: number) { return (a / b) * 3 + 4 - a; };
             const m = new expr(fn);
             assert.instanceOf(m, expr);
             assert.closeTo(m.eval(2, 3), fn(2, 3), 1e-6);
@@ -67,6 +67,17 @@ describe('types', () => {
                 const e = new expr(fnCos);
                 e.eval(2);
             }, /no Math builtins/);
+
+            const minMax = (x: number) => x && x;
+            const mm = new expr(minMax);
+            assert.equal(mm.eval(0), 0);
+            const size = +t.substring(t.length - 2);
+            if (t.startsWith('U')) {
+                assert.equal(mm.eval(2 ** size - 1), 2 ** size - 1);
+            } else {
+                assert.equal(mm.eval(2 ** (size - 1) - 1), 2 ** (size - 1) - 1);
+                assert.equal(mm.eval((-2) ** (size - 1)), (-2) ** (size - 1));
+            }
         });
     }
 });
